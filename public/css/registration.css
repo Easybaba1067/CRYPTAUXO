@@ -1,0 +1,79 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  overflow-x: hidden;
+  background: url("/asset/bitcoin-cryptocurrency.jpg") no-repeat center/cover;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+body::before {
+  content: "";
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background: #0c0f6e80;
+  z-index: -1;
+}
+a {
+  text-decoration: none;
+}
+li {
+  list-style: none;
+}
+.highlight {
+  color: #96f55bce;
+  font-style: italic;
+}
+.form-container {
+  text-align: center;
+  background-color: rgba(31, 31, 199, 0.623);
+  padding: 5rem;
+  border-radius: 20px;
+  color: #fff;
+  h1 {
+    margin-bottom: 5px;
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  div {
+    text-align: start;
+  }
+}
+form input {
+  padding: 10px 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: none;
+}
+form input:focus {
+  outline: none;
+}
+form .have-account {
+  margin: 5px 0 20px;
+  color: aliceblue;
+  a {
+    color: #000000;
+    background-color: #ffffff8f;
+    padding: 5px;
+    border-radius: 10px;
+    margin-left: 5px;
+  }
+}
+.confirm-password {
+  color: red;
+}
+.form-btn {
+  padding: 5px 20px;
+  border-radius: 5px;
+  border: none;
+  margin: auto;
+}

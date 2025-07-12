@@ -1,0 +1,123 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  overflow-x: hidden;
+  background: url("/asset/bitcoin-cryptocurrency.jpg") no-repeat center/cover;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+body::before {
+  content: "";
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background: #0c0f6e80;
+  z-index: -1;
+}
+a {
+  text-decoration: none;
+}
+li {
+  list-style: none;
+}
+.highlight {
+  color: #96f55bce;
+  font-style: italic;
+}
+.form-container {
+  height: 100%;
+  text-align: center;
+  background-color: rgba(31, 31, 199, 0.623);
+  padding: 5rem;
+  border-radius: 20px;
+  color: #fff;
+  h1 {
+    margin-bottom: 5px;
+  }
+}
+
+form {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  h2 {
+    font-family: "Courier New", Courier, monospace;
+  }
+  div {
+    display: flex;
+  }
+  button {
+    padding: 5px 20px;
+    margin: 10px;
+    background-color: rgb(31, 192, 31);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+  }
+  input {
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #382c2c;
+    color: #000000;
+    outline: none;
+    border-radius: 20px;
+  }
+  input::placeholder {
+    color: #020202;
+  }
+  textarea {
+    margin-top: 10px;
+    padding: 10px;
+    width: 600px;
+    height: 100px;
+    background-color: transparent;
+    border: 1px solid #2e2727;
+    color: #ffffff;
+    outline: none;
+  }
+  .long-input {
+    width: 300px;
+  }
+}
+select {
+  border: 1px solid #352c2c;
+  color: #000000;
+  outline: none;
+  height: 30px;
+  margin-top: 15px;
+  border-radius: 20px;
+}
+select:focus {
+  background-color: #646464;
+  color: #ffffff;
+  width: 200px;
+}
+.form-btn {
+  padding: 5px 20px;
+  border-radius: 5px;
+  border: none;
+  margin: auto;
+}
+@media (min-width: 819px) and (max-width: 1025px) {
+  .customize-data {
+    height: 60%;
+  }
+  .information-setting {
+    height: 40%;
+  }
+  .log-out {
+    width: 100%;
+  }
+}
+@media (max-width: 769px) {
+  body {
+    height: 200vh;
+  }
+}

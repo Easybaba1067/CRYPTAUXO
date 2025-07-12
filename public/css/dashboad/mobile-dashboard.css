@@ -1,0 +1,111 @@
+div.logo {
+  padding: 0 10px;
+  width: 100vw;
+  display: flex;
+  justify-content: space-between;
+}
+.nav {
+  ul {
+    flex-direction: column;
+    position: absolute;
+    top: 10%;
+    left: 0;
+    background-color: #333333e3;
+    height: 100vh;
+    width: 100%;
+    border-radius: 20px;
+    display: none;
+    div {
+      flex-direction: column;
+      width: 50%;
+      margin: auto;
+    }
+    li {
+      width: 100%;
+      margin: 2rem 0;
+    }
+  }
+}
+
+div.hamburger {
+  display: flex;
+}
+.bi-x-lg {
+  display: none;
+}
+.company-name {
+  padding: 10px 0 0;
+}
+div.hamburger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+.log-out {
+  display: none;
+}
+.nav {
+  padding: 20px 0 0;
+}
+.account-details {
+  border-radius: 10px;
+  flex-direction: column;
+}
+
+.transaction-container {
+  align-items: flex-start;
+  justify-content: space-evenly;
+  gap: 2rem;
+  width: 300px;
+  height: 200px;
+}
+.recent-transactions {
+  border-radius: 10px;
+}
+.market-value {
+  border-radius: 10px;
+  width: 350px;
+  height: 300px;
+}
+.market-record {
+  li {
+    white-space: nowrap;
+    margin: 10px 0;
+    background-color: #ffffff62;
+    border-radius: 20px;
+  }
+}
+.market {
+  gap: 0;
+}
+.money {
+  flex-direction: column;
+  .transfer {
+    margin-bottom: 20px;
+  }
+}
+.radio-check {
+  display: grid;
+  grid-template-columns: 2fr 2fr;
+}
+.mobile-flex {
+  flex-direction: column;
+}
+.customize-data {
+  border-radius: 10px;
+  form {
+    div {
+      display: flex;
+      flex-direction: column;
+    }
+    textarea,
+    .long-input {
+      width: 200px;
+    }
+  }
+}
+.information-setting {
+  flex-direction: column;
+  border-radius: 10px;
+}

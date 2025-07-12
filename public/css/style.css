@@ -1,0 +1,434 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  overflow-x: hidden;
+}
+a {
+  text-decoration: none;
+}
+li {
+  list-style: none;
+}
+.highlight {
+  color: #96f55bce;
+  font-style: italic;
+}
+nav {
+  background: #0c0f6ee5;
+  width: 100vw;
+  border-radius: 5px;
+}
+header {
+  height: 100vh;
+  width: 100vw;
+  background: url("/asset/bitcoin-cryptocurrency.jpg") no-repeat center
+    center/cover;
+  position: relative;
+}
+.logo {
+  display: flex;
+}
+.hamburger {
+  margin: 1.5rem;
+  display: none;
+}
+header::before {
+  content: "";
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background: #0c0f6e80;
+}
+
+.main-nav {
+  display: grid;
+  grid-template-columns: 5fr 2fr;
+}
+.translate {
+  font-size: 5px;
+  padding: 0 10px;
+  height: 20px;
+}
+.company-name {
+  margin: 0 1rem;
+
+  font-size: 2rem;
+}
+.inner-nav {
+  display: flex;
+}
+
+.inner-nav li {
+  margin: 0 2rem;
+  color: #ffff;
+  background-color: #0077b6;
+  padding: 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.inner-nav li a {
+  color: #fff;
+  background-color: transparent;
+}
+.inner-nav li:hover {
+  background-color: #48cae4;
+}
+.page-content {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.page-content p {
+  color: #ccd7c5;
+  font-size: 1.1rem;
+  font-family: "Times New Roman", Times, serif;
+}
+.page-text {
+  color: #fff;
+  font-size: 3rem;
+}
+.page-link {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+.page-link a {
+  background-color: #ffff;
+  padding: 10px;
+  border-radius: 15px;
+  color: #200122;
+}
+.page-link a:hover {
+  background-color: #0096c7;
+  color: #ffffff;
+}
+
+/* ----about css----- */
+.about {
+  background: #03045e;
+  width: 100%;
+  margin: 0.5rem;
+  text-align: center;
+  background: url("/asset/pierre-borthiry-peiobty-vBCVcWUyvyM-unsplash.jpg")
+    no-repeat center center/cover;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 3fr);
+}
+.about-text {
+  text-align: center;
+  margin: auto;
+  max-width: 1100px;
+  color: #ffff;
+  padding: 12px;
+}
+.about-info {
+  border-radius: 10px;
+  margin: auto;
+  max-width: 500px;
+  background-color: #0077b6;
+  margin-top: 20px;
+  padding: 20px;
+}
+.about-grid img {
+  width: 400px;
+  height: 400px;
+  border-radius: 30px;
+  padding: 10px;
+}
+.main-about {
+  margin: 20px;
+  color: #ffff;
+}
+.about-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.about-content h1 {
+  font-size: 2rem;
+}
+.about-content h2 {
+  color: #0096c7;
+}
+.about-content {
+  width: 100%;
+  color: #ffff;
+  text-align: center;
+  max-width: 500px;
+}
+.about-link {
+  background: #0077b6;
+  padding: 10px;
+  border-radius: 20px;
+  width: 100px;
+  white-space: nowrap;
+  margin: auto;
+  margin-top: 20px;
+}
+.about-link a {
+  color: white;
+}
+/* live data */
+.live-data {
+  overflow-x: auto;
+  scrollbar-color: transparent transparent;
+  white-space: nowrap;
+  color: #fff;
+  margin-top: 20px;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+.data {
+  background-color: #33333328;
+  display: inline-block;
+  border: 1px solid #fff;
+  border-radius: 20px;
+  padding: 20px 8px 50px;
+  margin: 0 10px;
+}
+.data-flex {
+  display: flex;
+  p {
+    padding: 5px 10px;
+  }
+}
+
+/* -------services css------- */
+.service {
+  background: url("/asset/Love\ and\ Liberty.jpg") no-repeat center center/cover;
+}
+.service-wrap {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  padding: 10px;
+}
+.service-h1 {
+  font-size: 3rem;
+  text-align: center;
+  color: #ffff;
+  font-style: italic;
+  padding-top: 10px;
+}
+.service-info {
+  background: #0077b6;
+  margin: 1rem;
+  height: 400px;
+  width: 300px;
+  padding: 1rem;
+  border-radius: 15px;
+}
+.service-info h1 {
+  padding: 1rem;
+  white-space: nowrap;
+}
+.service-info:hover {
+  color: #0077b6;
+  background-color: #fff;
+}
+.service-info:hover h1 {
+  color: #0c0f6e;
+}
+.info-link {
+  margin: 1.3rem;
+  text-align: center;
+  padding: 1.5rem;
+  white-space: nowrap;
+}
+.info-link a {
+  color: #ffff;
+  background-color: #03045e;
+  padding: 10px;
+  border-radius: 20px;
+  font-size: 2rem;
+}
+
+/* =======description====== */
+.description {
+  max-width: 500px;
+  margin: auto;
+  justify-content: center;
+  padding: 1rem;
+}
+.des-pay {
+  padding: 1rem;
+  border-bottom: 1px solid #0c0f6e;
+}
+.description h2 {
+  padding: 1rem;
+  text-align: center;
+}
+/* -====subscription CSS====== */
+.plan {
+  display: grid;
+  grid-template-columns: repeat(2, 2fr);
+  text-align: center;
+}
+.sub-menu {
+  margin: 2rem;
+  background: #0c0f6e;
+}
+
+.plan-head {
+  padding: 5px;
+  margin: 0rem 3rem;
+  color: #fff;
+}
+.plan p {
+  line-height: 2.5rem;
+  background-color: #e0d9d9;
+  font-weight: bolder;
+  padding: 1rem;
+}
+.plan-btn {
+  color: #fff;
+  padding: 10px;
+  margin-top: 5px;
+}
+.plan-btn a {
+  color: #fff;
+}
+.sub-menu:hover {
+  background-color: #33a8cf;
+}
+
+.expert-trader {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+.expert-trader img {
+  height: 200px;
+  width: 300px;
+  border-radius: 20px;
+}
+.expert-trader h2 {
+  margin: 1rem;
+  padding: 10px;
+  border-bottom: dotted #0077b6 2px;
+}
+.contact-info a {
+  color: black;
+  padding: 3rem;
+}
+.contact-info div {
+  padding-top: 50px;
+}
+.contact-form {
+  max-width: 400px;
+  margin: auto;
+  padding: 2rem;
+}
+.contact-form div {
+  margin: 1rem;
+  display: block;
+}
+.contact-form input {
+  width: 200px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px #333 solid;
+}
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+}
+.contact-form textarea {
+  width: 200px;
+  height: 100px;
+  background-color: #0076b62c;
+  border: 2px solid #333;
+}
+.summit-btn:focus {
+  outline: none;
+}
+.summit-btn:hover {
+  background-color: #03045e;
+  color: #ffff;
+}
+.summit-btn {
+  border-radius: 10px;
+  padding: 5px;
+  width: 50%;
+  text-align: center;
+}
+.contact {
+  background: url("/asset/Red\ Sunset.jpg") no-repeat center center/cover;
+}
+.contact-social div {
+  margin: 0px 10px;
+  padding: 20px;
+}
+.contact-social div a {
+  color: #333;
+}
+.contact-social {
+  display: flex;
+  justify-content: center;
+}
+/* ======foooter===== */
+footer {
+  text-align: center;
+  margin: 10px 0 0;
+  background: #0c0f6e;
+}
+.copywrite {
+  color: #fff;
+  padding: 10px;
+}
+.foot-wrap {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr;
+
+  padding: 20px;
+
+  color: #fff;
+  text-align: center;
+}
+.foot-div {
+  text-align: center;
+  padding: 10px;
+  line-height: 2rem;
+}
+.foot-div ul {
+  list-style: none;
+  color: #fff;
+}
+.foot-div h1 {
+  padding-bottom: 5px;
+}
+.foot-div ul li a {
+  color: #fff;
+}
+.foot-div ol {
+  font-size: small;
+  margin: 5px;
+}
+.foot-div ol li {
+  list-style-type: disc;
+}
+@media (min-width: 770px) and (max-width: 1024px) {
+  .about-info {
+    margin: 2rem;
+  }
+  .service-wrap {
+    display: grid;
+    grid-template-columns: repeat(2, 2fr);
+  }
+  header {
+    height: 80vh;
+  }
+}

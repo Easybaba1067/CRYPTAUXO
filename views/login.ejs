@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="keyword" content="" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Sofia"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" media="(max-width: 500px)" href="/css/mobile.css" />
+    <link rel="stylesheet" href="/css/registration.css" />
+    <link rel="shortcut icon" href="/asset/R.png" type="image/x-icon" />
+    <title>Subscription</title>
+  </head>
+  <body>
+    <div class="form-container">
+      <h2>welcome back</h2>
+      <p>login your accout</p>
+      <div
+        class="checking"
+        style="font-size: bold; color: rgb(247, 34, 34); padding-top: 10px"
+      >
+        <%= checking%>
+      </div>
+      <form action="/login" method="post">
+        <input type="text" placeholder="username" name="username" />
+        <input type="password" placeholder="password" name="password" />
+        <div class="have-account">
+          New on cryptauxo?<a href="/register">Register</a>
+        </div>
+
+        <button class="form-btn" type="submit">login</button>
+      </form>
+    </div>
+  </body>
+</html>

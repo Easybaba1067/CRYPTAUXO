@@ -1,0 +1,93 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+div.logo {
+  justify-content: space-between;
+  width: 100vw;
+}
+.company-name {
+  padding: 1.5rem;
+}
+div.hamburger {
+  display: flex;
+}
+nav.main-nav {
+  display: block;
+  width: 100vw;
+}
+ul.inner-nav {
+  display: block;
+  text-align: center;
+  display: none;
+}
+ul.inner-nav li {
+  margin: 5px;
+  max-width: 500px;
+  padding: 5px;
+  border: 0;
+  background-color: transparent;
+  border-bottom: 2px aquamarine solid;
+}
+.bi-x-lg {
+  display: none;
+}
+div.page-content {
+}
+div.grid-container {
+  display: block;
+}
+div.service-wrap {
+  display: block;
+  text-align: center;
+  max-width: 400px;
+  margin: auto;
+}
+section.plan {
+  display: block;
+}
+div.foot-wrap {
+  display: block;
+}
+section.payment {
+  display: block;
+}
+section.expert-trader {
+  display: block;
+}
+div.about-grid {
+  display: block;
+}
+div.about-content {
+  padding: 10px;
+  max-width: 500px;
+  margin: auto;
+}
+
+@media (max-width: 350px) {
+  div.page-content p {
+    width: 100%;
+  }
+
+  section.about-text {
+    max-width: fit-content;
+  }
+  div.about-grid img {
+    display: none;
+  }
+}
+
+@media (min-width: 350px) and (max-width: 540px) {
+  div.grid-container {
+    display: block;
+  }
+  section.about-text {
+    max-width: fit-content;
+  }
+  div.about-grid img {
+    display: none;
+  }
+  div.service-wrap {
+    display: block;
+  }
+}

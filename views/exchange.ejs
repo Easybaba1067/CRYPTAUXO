@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="/css/dashboad/exchange.css" />
+    <link
+      rel="stylesheet"
+      media="(max-width: 769px)"
+      href="/css/dashboad/mobile-dashboard.css"
+    />
+    <link rel="shortcut icon" href="/asset/R.png" type="image/x-icon" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="nav">
+      <div class="logo">
+        <div class="company-name">
+          <a class="highlight" href="/views/dashboard.ejs">CRYPTAUXO</a>
+        </div>
+        <div class="hamburger">
+          <i class="bi bi-list" style="color: aliceblue; font-size: 2rem"></i>
+          <i class="bi bi-x-lg" style="color: aliceblue; font-size: 2rem"></i>
+        </div>
+      </div>
+      <ul>
+        <div>
+          <li>
+            <a href="/dashboard"
+              ><i
+                class="bi bi-wallet2"
+                style="color: rgb(52, 241, 52); padding: 0 10px"
+              ></i
+              >Dashboard</a
+            >
+          </li>
+          <li>
+            <a href="./account-history"
+              ><i
+                class="bi bi-book"
+                style="color: rgb(52, 241, 52); padding: 0 10px"
+              ></i
+              >Account History</a
+            >
+          </li>
+          <li>
+            <a href="/profile"
+              ><i
+                class="bi bi-person-circle"
+                style="color: rgb(52, 241, 52); padding: 0 10px"
+              ></i
+              >Profile</a
+            >
+          </li>
+          <li style="background-color: rgba(0, 255, 255, 0.411)">
+            <a href="#"
+              ><i
+                class="bi bi-currency-exchange"
+                style="color: rgb(52, 241, 52); padding: 0 10px"
+              ></i
+              >Exchange</a
+            >
+          </li>
+        </div>
+      </ul>
+      <div class="log-out">
+        <a href="/logout" role="button">Log out</a>
+      </div>
+    </div>
+    <div class="screen">
+      <div class="account-details">
+        <div class="account-name">
+          <h4><%= firstname %> <%= lastname %></h4>
+          <p>
+            <i class="bi bi-envelope" style="font-size: 1.2rem"></i>
+            <span style="margin-left: 8px"><%= email %></span>
+          </p>
+        </div>
+        <div class="account-user">
+          <p>User ID: <%= ID %></p>
+          <p>Status: <span style="color: green">online</span></p>
+        </div>
+        <div class="account-balance">
+          <h4>Account balance</h4>
+          <p id="account-balance">0.00000000 BTC</p>
+        </div>
+        <div class="account-value">
+          <h4>Estimated value</h4>
+          <p id="balance">
+            $<%= amount %>
+            <span class="deposit-btn"
+              ><a href="/account-history">Deposit</a></span
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="picker">
+      <label for="symbol">Choose Symbol:</label>
+      <select id="symbol">
+        <option value="BTCUSDT">BTCUSDT</option>
+        <option value="ETHUSDT">ETHUSDT</option>
+        <option value="BNBUSDT">BNBUSDT</option>
+        <option value="SOLUSDT">SOLUSDT</option>
+        <option value="XRPUSDT">XRPUSDT</option>
+      </select>
+
+      <label for="interval">Choose Interval:</label>
+      <select id="interval">
+        <option value="1m">1M</option>
+        <option value="5m">5M</option>
+        <option value="15m">15M</option>
+        <option value="30m">30M</option>
+        <option value="1h">1H</option>
+      </select>
+      <button id="updateChart">Update</button>
+    </div>
+    <div id="chart-container" style="width: 100%; height: 600px"></div>
+    <div class="makeorder">
+      <div class="makeorder-head">
+        <h2>Trade</h2>
+        <div>
+          <h4 class="head active">Limit</h4>
+          <h4 class="head">Market</h4>
+          <h4 class="head">Stop-limit</h4>
+        </div>
+      </div>
+      <div class="limit form-active active">
+        <div class="mobile-flex">
+          <form name="/limit/buy" action="">
+            <div>
+              <label for="market">market</label>
+              <select name="market" id="select">
+                <option value="USDT">USDT</option>
+                <option value="USDT">BTC</option>
+                <option value="USDT">ETH</option>
+                <option value="USDT">SOL</option>
+              </select>
+            </div>
+            <div>
+              <label for="">price</label>
+              <input type="contact" placeholder="price" />
+            </div>
+            <div>
+              <label for="">amount</label>
+              <input type="contact" placeholder="BTC" />
+            </div>
+            <button style="background-color: rgb(37, 226, 37)" type="submit">
+              Buy
+            </button>
+          </form>
+          <form name="/limit/sell" action="">
+            <div>
+              <label for="market">market</label>
+              <select name="market" id="select">
+                <option value="USDT">USDT</option>
+                <option value="USDT">BTC</option>
+                <option value="USDT">ETH</option>
+                <option value="USDT">SOL</option>
+              </select>
+            </div>
+            <div>
+              <label for="">price</label>
+              <input type="contact" placeholder="price" />
+            </div>
+            <div>
+              <label for="">amount</label>
+              <input type="contact" placeholder="BTC" />
+            </div>
+            <button
+              style="background-color: rgb(231, 46, 46); color: #fff"
+              type="submit"
+            >
+              Sell
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="market form-active">
+        <div class="mobile-flex">
+          <form name="/market/buy" action="">
+            <div>
+              <label for="market">market</label>
+              <select name="market" id="select">
+                <option value="USDT">USDT</option>
+                <option value="USDT">BTC</option>
+                <option value="USDT">ETH</option>
+                <option value="USDT">SOL</option>
+              </select>
+            </div>
+            <div>
+              <label for="">price</label>
+              <input type="contact" placeholder="price" />
+            </div>
+            <div>
+              <label for="">amount</label>
+              <input type="contact" placeholder="BTC" />
+            </div>
+            <div>
+              <label for="">Total</label>
+              <input type="contact" placeholder="BTC" />
+            </div>
+            <button style="background-color: rgb(37, 226, 37)" type="submit">
+              Buy
+            </button>
+          </form>
+          <form name="/market/sell" action="">
+            <div>
+              <label for="market">market</label>
+              <select name="market" id="select">
+                <option value="USDT">USDT</option>
+                <option value="USDT">BTC</option>
+                <option value="USDT">ETH</option>
+                <option value="USDT">SOL</option>
+              </select>
+            </div>
+            <div>
+              <label for="">price</label>
+              <input type="contact" placeholder="price" />
+            </div>
+            <div>
+              <label for="">amount</label>
+              <input type="contact" placeholder="BTC" />
+            </div>
+            <div>
+              <label for="">Total</label>
+              <input type="contact" placeholder="BTC" />
+            </div>
+            <button
+              style="background-color: rgb(231, 46, 46); color: #fff"
+              type="submit"
+            >
+              Sell
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="stop-limit form-active">
+        <div class="mobile-flex">
+          <form name="/stop-limit/buy" action="">
+            <div>
+              <label for="market">market</label>
+              <select name="market" id="select">
+                <option value="USDT">USDT</option>
+                <option value="USDT">BTC</option>
+                <option value="USDT">ETH</option>
+                <option value="USDT">SOL</option>
+              </select>
+            </div>
+            <div>
+              <label for="">price</label>
+              <input type="contact" placeholder="price" />
+            </div>
+            <div>
+              <label for="">amount</label>
+              <input type="contact" placeholder="BTC" />
+            </div>
+            <div>
+              <label for="">Limit</label>
+              <input type="contact" placeholder="limit" />
+            </div>
+            <button style="background-color: rgb(37, 226, 37)" type="submit">
+              Buy
+            </button>
+          </form>
+          <form name="/stop-limit/sell" action="">
+            <div>
+              <label for="market">market</label>
+              <select name="market" id="select">
+                <option value="USDT">USDT</option>
+                <option value="USDT">BTC</option>
+                <option value="USDT">ETH</option>
+                <option value="USDT">SOL</option>
+              </select>
+            </div>
+            <div>
+              <label for="">price</label>
+              <input type="contact" placeholder="price" />
+            </div>
+            <div>
+              <label for="">amount</label>
+              <input type="contact" placeholder="BTC" />
+            </div>
+            <div>
+              <label for="">Limit</label>
+              <input type="contact" placeholder="limit" />
+            </div>
+            <button
+              style="background-color: rgb(231, 46, 46); color: #fff"
+              type="submit"
+            >
+              Sell
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="recent-transactions">
+      <h2>Recent Order</h2>
+      <p>there's no trade yet!</p>
+    </div>
+    <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="/chart.js"></script>
+    <script src="/dashboard.js"></script>
+  </body>
+</html>

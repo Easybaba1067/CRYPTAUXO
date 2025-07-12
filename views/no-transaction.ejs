@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="/css/dashboad/account-history.css" />
+    <link
+      rel="stylesheet"
+      media="(max-width: 769px)"
+      href="/css/dashboad/mobile-dashboard.css"
+    />
+    <link rel="shortcut icon" href="/asset/R.png" type="image/x-icon" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="nav">
+      <div class="logo">
+        <div class="company-name">
+          <a class="highlight" href="/views/dashboard.ejs">CRYPTAUXO</a>
+        </div>
+        <div class="hamburger">
+          <i class="bi bi-list" style="color: aliceblue; font-size: 2rem"></i>
+          <i class="bi bi-x-lg" style="color: aliceblue; font-size: 2rem"></i>
+        </div>
+      </div>
+      <ul>
+        <div>
+          <li>
+            <a href="/dashboard"
+              ><i
+                class="bi bi-wallet2"
+                style="color: rgb(52, 241, 52); padding: 0 10px"
+              ></i
+              >Dashboard</a
+            >
+          </li>
+          <li style="background-color: rgba(0, 255, 255, 0.411)">
+            <a href=""
+              ><i
+                class="bi bi-book"
+                style="color: rgb(52, 241, 52); padding: 0 10px"
+              ></i
+              >Account History</a
+            >
+          </li>
+          <li>
+            <a href="/profile"
+              ><i
+                class="bi bi-person-circle"
+                style="color: rgb(52, 241, 52); padding: 0 10px"
+              ></i
+              >Profile</a
+            >
+          </li>
+          <li>
+            <a href="/exchange"
+              ><i
+                class="bi bi-currency-exchange"
+                style="color: rgb(52, 241, 52); padding: 0 10px"
+              ></i
+              >Exchange</a
+            >
+          </li>
+        </div>
+      </ul>
+      <div class="log-out">
+        <a href="/logout" role="button">Log out</a>
+      </div>
+    </div>
+    <div class="account">
+      <h2>Wallet overview</h2>
+      <div class="account-details">
+        <div class="account-name">
+          <h4><%= firstname %> <%= lastname %></h4>
+          <p>
+            <i class="bi bi-envelope" style="font-size: 1.2rem"></i>
+            <span style="margin-left: 8px"><%= email %></span>
+          </p>
+        </div>
+        <div class="account-user">
+          <p>User ID: <%= ID %></p>
+          <p>Status: <span style="color: green">online</span></p>
+        </div>
+        <div class="account-balance">
+          <h4>Account balance</h4>
+          <p id="account-balance">0.00000000 BTC</p>
+        </div>
+        <div class="account-value">
+          <h4>Estimated value</h4>
+          <p id="balance">
+            $<%= amount %>
+            <span class="deposit-btn"
+              ><a href="/account-history">Deposit</a></span
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="money">
+      <div class="transfer">
+        <div class="deposit-head">
+          <h2 style="color: rgb(24, 211, 24)">Deposit</h2>
+          <div>
+            <li class="head active">Crypto</li>
+          </div>
+        </div>
+        <form
+          class="crypto-deposit active form-active"
+          action="/account-history"
+          method="post"
+        >
+          <div>
+            <label>Amount (USD)</label>
+            <select name="amount" id="">
+              <option value="2500">$900</option>
+              <option value="6000">$1350</option>
+              <option value="7000">$1800</option>
+              <option value="3900">$2250</option>
+            </select>
+          </div>
+          <button type="submit">deposit</button>
+        </form>
+      </div>
+      <div class="withdraw">
+        <div class="deposit-head">
+          <h2 style="color: rgb(27, 216, 27)">Withdraw</h2>
+          <div>
+            <li class="head-withdraw active">Crypto</li>
+            <li class="head-withdraw">Bank</li>
+          </div>
+        </div>
+        <form class="active withdraw-active" action="">
+          <div class="radio-check">
+            <div>
+              <input type="radio" id="option-1" name="radio-group" />
+              <label for="option-1">BTC</label>
+            </div>
+            <div>
+              <input type="radio" id="option-2" name="radio-group" />
+              <label for="option-2">SOL</label>
+            </div>
+            <div>
+              <input type="radio" id="option-3" name="radio-group" />
+              <label for="option-3">BNB</label>
+            </div>
+            <div>
+              <input type="radio" id="option-4" name="radio-group" />
+              <label for="option-4">ETH</label>
+            </div>
+            <div>
+              <input type="radio" id="option-5" name="radio-group" />
+              <label for="option-5">EOS</label>
+            </div>
+            <div>
+              <input type="radio" id="option-6" name="radio-group" />
+              <label for="option-6">USDT</label>
+            </div>
+          </div>
+          <div class="input">
+            <input type="text" placeholder="Wallet address" />
+          </div>
+          <div class="input">
+            <input type="text" placeholder="Institution name" />
+          </div>
+          <button type="submit">withdraw</button>
+        </form>
+        <form class="cash-deposit withdraw-active" action="">
+          <div>
+            <label for="account-name">account name</label>
+            <input type="text" />
+          </div>
+          <div>
+            <label for="account-number">bank account</label>
+            <input type="phone" />
+          </div>
+          <div>
+            <label for="bank-name">bank name</label>
+            <input type="text" />
+          </div>
+          <div>
+            <label for="amount">amount</label>
+            <input type="phone" />
+          </div>
+          <button type="submit">withdraw</button>
+        </form>
+      </div>
+    </div>
+    <div class="screen">
+      <div class="recent-transactions">
+        <h2>Recent transactions</h2>
+        <div class="no-transaction-container">
+          <p style="background-color: transparent">no transactions</p>
+        </div>
+      </div>
+    </div>
+    <script src="/dashboard.js"></script>
+  </body>
+</html>
