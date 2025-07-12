@@ -171,6 +171,7 @@ app.route("/dashboard").get((req, res) => {
         if (!Array.isArray(marketData)) {
           marketData = Object.values(marketData);
         }
+        console.log("Binance raw response:", marketData);
 
         res.render("dashboard", {
           firstname: info.firstname,

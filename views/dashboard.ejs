@@ -127,10 +127,11 @@
           </div>
           <div class="market-record">
             <h4>24 Change</h4>
-            <% markets.forEach(m => { %>
-
+            <% if (Array.isArray(markets)) { %> <% markets.forEach(m => { %>
             <li><%= m.priceChange %></li>
-            <% }) %>
+            <% }) %> <% } else { %>
+            <li>Market data is not available</li>
+            <% } %>
           </div>
           <div class="market-record">
             <h4>Volume</h4>
