@@ -7,6 +7,7 @@ const passportLocalMongoose = require("passport-local-mongoose");
 const axios = require("axios");
 const crypto = require("crypto");
 const punycode = require("punycode/");
+const RedisStore = require("connect-redis")(session);
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
+    store: new RedisStore({ client: redisClient }),
     secret: process.env.SESSION_KEY,
     resave: false,
     saveUninitialized: false,
