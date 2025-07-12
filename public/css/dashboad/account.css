@@ -33,8 +33,11 @@ li {
   margin-right: 10px;
   white-space: nowrap;
   border-radius: 10px;
+  text-align: center;
 }
-
+.hide-logout {
+  display: none !important;
+}
 .log-out {
   white-space: nowrap;
   text-align: center;
@@ -178,5 +181,12 @@ li {
   }
   .live-data {
     height: 50%;
+  }
+  .log-out {
+    width: 100%;
+  }
+  .markets {
+    align-items: start;
+    justify-content: start;
   }
 }

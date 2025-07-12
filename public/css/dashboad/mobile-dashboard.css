@@ -42,6 +42,15 @@ div.hamburger {
   justify-content: center;
   padding-bottom: 20px;
 }
+.hide-logout {
+  display: flex !important;
+  background-color: green;
+  white-space: nowrap;
+  text-align: center;
+  border: #fff solid 1px;
+  padding: 5px;
+  border-radius: 10px;
+}
 .log-out {
   display: none;
 }
@@ -76,9 +85,14 @@ div.hamburger {
     border-radius: 20px;
   }
 }
-.market {
-  gap: 0;
+.markets {
+  gap: 3rem;
+  display: flex;
+  overflow-y: auto;
+  align-items: start;
+  justify-content: start;
 }
+
 .money {
   flex-direction: column;
   .transfer {

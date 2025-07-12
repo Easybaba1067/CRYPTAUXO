@@ -35,8 +35,11 @@ li {
   margin-right: 10px;
   white-space: nowrap;
   border-radius: 10px;
+  text-align: center;
 }
-
+.hide-logout {
+  display: none !important;
+}
 .log-out {
   white-space: nowrap;
   text-align: center;
@@ -96,6 +99,9 @@ form {
     color: #fff;
     outline: none;
     border-radius: 20px;
+  }
+  input[type="date"] {
+    color: #fff;
   }
   input::placeholder {
     color: #ffffff;

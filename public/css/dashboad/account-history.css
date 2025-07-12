@@ -34,8 +34,11 @@ li {
   margin-right: 10px;
   white-space: nowrap;
   border-radius: 10px;
+  text-align: center;
 }
-
+.hide-logout {
+  display: none !important;
+}
 .log-out {
   white-space: nowrap;
   text-align: center;
@@ -43,6 +46,9 @@ li {
   width: 50%;
   padding: 5px;
   border-radius: 10px;
+}
+.hide-out {
+  display: none;
 }
 .account {
   padding: 1rem;
@@ -250,6 +256,9 @@ input {
     }
   }
   .transaction-container {
+    width: 100%;
+  }
+  .log-out {
     width: 100%;
   }
 }

@@ -35,8 +35,11 @@ li {
   margin-right: 10px;
   white-space: nowrap;
   border-radius: 10px;
+  text-align: center;
 }
-
+.hide-logout {
+  display: none !important;
+}
 .log-out {
   white-space: nowrap;
   text-align: center;
@@ -219,5 +222,8 @@ form {
   .transaction-container {
     width: 800px;
     height: 400px;
+  }
+  .log-out {
+    width: 100%;
   }
 }

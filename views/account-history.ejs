@@ -15,13 +15,13 @@
       href="/css/dashboad/mobile-dashboard.css"
     />
     <link rel="shortcut icon" href="/asset/R.png" type="image/x-icon" />
-    <title>Document</title>
+    <title>Cryptauxo history</title>
   </head>
   <body>
     <div class="nav">
       <div class="logo">
         <div class="company-name">
-          <a class="highlight" href="/views/dashboard.ejs">CRYPTAUXO</a>
+          <a class="highlight" href="/dashboard">CRYPTAUXO</a>
         </div>
         <div class="hamburger">
           <i class="bi bi-list" style="color: aliceblue; font-size: 2rem"></i>
@@ -67,6 +67,9 @@
             >
           </li>
         </div>
+        <div class="hide-logout">
+          <a href="/logout" role="button">Log out</a>
+        </div>
       </ul>
       <div class="log-out">
         <a href="/logout" role="button">Log out</a>
@@ -93,7 +96,7 @@
         <div class="account-value">
           <h4>Estimated value</h4>
           <p id="balance">
-            <%= amount %>
+            $<%= amount %>
             <span class="deposit-btn"
               ><a href="/account-history">Deposit</a></span
             >
@@ -131,7 +134,6 @@
           <h2 style="color: rgb(27, 216, 27)">Withdraw</h2>
           <div>
             <li class="head-withdraw active">Crypto</li>
-            <li class="head-withdraw">Bank</li>
           </div>
         </div>
         <form class="active withdraw-active" action="">
@@ -166,25 +168,6 @@
           </div>
           <div class="input">
             <input type="text" placeholder="Institution name" />
-          </div>
-          <button type="submit">withdraw</button>
-        </form>
-        <form class="cash-deposit withdraw-active" action="">
-          <div>
-            <label for="account-name">account name</label>
-            <input type="text" />
-          </div>
-          <div>
-            <label for="account-number">bank account</label>
-            <input type="phone" />
-          </div>
-          <div>
-            <label for="bank-name">bank name</label>
-            <input type="text" />
-          </div>
-          <div>
-            <label for="amount">amount</label>
-            <input type="phone" />
           </div>
           <button type="submit">withdraw</button>
         </form>

@@ -60,6 +60,7 @@ form input:focus {
 form .have-account {
   margin: 5px 0 20px;
   color: aliceblue;
+  white-space: nowrap;
   a {
     color: #000000;
     background-color: #ffffff8f;

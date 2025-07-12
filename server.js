@@ -29,14 +29,16 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // database connection
+mongoose.Promise = global.Promise;
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {})
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // payment Schema
 const transactionSchema = new mongoose.Schema({
   merchantTradeNo: String,
+  orderAmount: Number,
   currency: String,
   status: String,
   responseData: Object,
@@ -100,23 +102,22 @@ app
   .get((req, res) => {
     res.render("register", { checking: "" });
   })
-  .post((req, res, next) => {
-    const fullName = req.body.fullName;
-    User.register(
-      { username: req.body.email },
-      req.body.password,
-      (err, user) => {
-        if (err) {
-          return res.render("register", { checking: "email taken" });
-        }
+  .post(async (req, res, next) => {
+    try {
+      const user = await User.register(
+        { username: req.body.email },
+        req.body.password
+      );
 
-        req.login(user, (err) => {
-          if (err) return next(err);
+      await req.login(user); // Only works if req.login supports promises
 
-          return res.redirect("/information");
-        });
+      return res.redirect("/information");
+    } catch (err) {
+      if (err.name === "UserExistsError") {
+        return res.render("register", { checking: "email taken" });
       }
-    );
+      return next(err);
+    }
   });
 
 // login page route
@@ -142,10 +143,11 @@ app
   );
 
 //  dashboard
-app.route("/dashboard").get((req, res) => {
+app.route("/dashboard").get(async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect("/login");
 
-  User.findById(req.user._id).then((user) => {
+  try {
+    const user = await User.findById(req.user._id);
     const info = user.information;
     const transact = user.transactions;
 
@@ -165,99 +167,91 @@ app.route("/dashboard").get((req, res) => {
     const encoded = encodeURIComponent(JSON.stringify(symbols));
     const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${encoded}`;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((marketData) => {
-        if (!Array.isArray(marketData)) {
-          marketData = Object.values(marketData);
-        }
-        console.log("Binance raw response:", marketData);
+    const response = await fetch(url);
+    let marketData = await response.json();
 
-        res.render("dashboard", {
-          firstname: info.firstname,
-          lastname: info.lastname,
-          amount: user.amount,
-          ID: user.ID,
-          email: user.username,
-          markets: marketData,
-        });
-      })
-      .catch((err) => {
-        console.error("Binance fetch error:", err);
-        res.render("dashboard", {
-          firstname: info.firstname,
-          lastname: info.lastname,
-          amount: user.amount,
-          ID: user.ID,
-          email: user.username,
-          markets: [], // fallback on error
-        });
-      });
-  });
+    if (!Array.isArray(marketData)) {
+      marketData = Object.values(marketData);
+    }
+
+    res.render("dashboard", {
+      firstname: info.firstname,
+      lastname: info.lastname,
+      amount: user.amount,
+      ID: user.ID,
+      email: user.username,
+      markets: marketData,
+    });
+  } catch (err) {
+    console.error("Error loading dashboard:", err);
+    res.render("dashboard", {
+      firstname: info?.firstname || "",
+      lastname: info?.lastname || "",
+      amount: user?.amount || 0,
+      ID: user?.ID || "",
+      email: user?.username || "",
+      markets: [],
+    });
+  }
 });
 // account histoty route
 app
   .route("/account-history")
-  .get((req, res) => {
+  // ✅ GET: Fetch user transactions and render view
+  .get(async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.redirect("/login");
     }
 
-    User.findById(req.user._id)
-      .then((user) => {
-        if (!user) {
-          return res.status(404).send("User not found");
-        }
+    try {
+      const user = await User.findById(req.user._id);
+      if (!user) return res.status(404).send("User not found");
 
-        const info = user.information;
-        const transactions = user.transactions;
+      const info = user.information;
+      const transactions = user.transactions;
 
-        if (!info) {
-          return res.render("information");
-        }
+      if (!info) return res.render("information");
 
-        if (!transactions || transactions.length === 0) {
-          return res.render("no-transaction", {
-            firstname: info.firstname,
-            lastname: info.lastname,
-            amount: user.amount,
-            ID: user.ID,
-            email: user.username,
-            transactions,
-          });
-        }
-
-        res.render("account-history", {
+      if (!transactions || transactions.length === 0) {
+        return res.render("no-transaction", {
           firstname: info.firstname,
           lastname: info.lastname,
           amount: user.amount,
           ID: user.ID,
           email: user.username,
-          transaction: transactions, // 🆕 if you plan to show them in the view
+          transactions,
         });
-      })
-      .catch((err) => {
-        console.error("Error:", err);
-        res.status(500).send("Internal server error");
+      }
+
+      res.render("account-history", {
+        firstname: info.firstname,
+        lastname: info.lastname,
+        amount: user.amount,
+        ID: user.ID,
+        email: user.username,
+        transaction: transactions,
       });
+    } catch (err) {
+      console.error("Error:", err);
+      res.status(500).send("Internal server error");
+    }
   })
-  .post((req, res) => {
-    //  Ensure user is authenticated
+
+  // ✅ POST: Trigger Binance payment & update user wallet
+  .post(async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
     const userId = req.user._id;
-    const orderAmount = parseFloat(req.body.amount);
+    const orderAmount = req.body.amount;
 
-    //  Validate deposit amount
-    if (!orderAmount || orderAmount < 1) {
+    if (!orderAmount || parseFloat(orderAmount) < 1) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid deposit amount" });
     }
 
-    //  Prepare Binance payment payload
     const payload = {
       merchantTradeNo: `deposit_${Date.now()}`,
       orderAmount: orderAmount,
@@ -288,169 +282,165 @@ app
       "BinancePay-Signature": signature,
     };
 
-    //  Call Binance API and save transaction
-    axios
-      .post(
+    try {
+      const response = await axios.post(
         "https://bpay.binanceapi.com/binancepay/openapi/v2/order",
         payload,
         { headers }
-      )
-      .then((response) => {
-        console.log("Binance response:", response.data);
+      );
 
-        const tx = {
-          merchantTradeNo: payload.merchantTradeNo,
-          orderAmount: payload.orderAmount,
-          currency: payload.currency,
-          status: response.data.status,
-          responseData: response.data,
-          timestamp: new Date(),
-        };
+      const tx = {
+        merchantTradeNo: payload.merchantTradeNo,
+        orderAmount: payload.orderAmount,
+        currency: payload.currency,
+        status: response.data.status,
+        responseData: response.data,
+        timestamp: new Date().toISOString().slice(0, 16).replace("T", " "),
+      };
 
-        return User.findByIdAndUpdate(
-          req.user._id,
-          {
-            $push: { transactions: tx },
-            amount: parseInt(tx.orderAmount.replace(/[$,]/g, "")),
-          },
-          { new: true }
-        );
-      })
-      .then((updatedUser) => {
-        res.json({
-          success: true,
-          user: updatedUser,
-          message: "Payment initiated",
-        });
-      })
-      .catch((err) => {
-        console.error("Payment error:", err.response?.data || err.message);
-        res.status(500).json({ success: false, message: "Payment failed" });
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          $push: { transactions: tx },
+          $inc: { amount: parseFloat(orderAmount) },
+        },
+        { new: true }
+      );
+
+      res.json({
+        success: true,
+        user: updatedUser,
+        message: "Payment initiated",
       });
+    } catch (err) {
+      console.error("Payment error:", err.response?.data || err.message);
+      res.status(500).json({ success: false, message: "Payment failed" });
+    }
   });
 // webhook//binance
-app.post("/webhook/binance", (req, res) => {
+app.post("/webhook/binance", async (req, res) => {
   const { merchantTradeNo, status } = req.body;
 
   if (status === "SUCCESS") {
-    User.findOne({ "transactions.merchantTradeNo": merchantTradeNo })
-      .then((user) => {
-        if (!user) throw new Error("User not found");
-
-        const matchedTransaction = user.transactions.find(
-          (tx) => tx.merchantTradeNo === merchantTradeNo
-        );
-        if (!matchedTransaction) throw new Error("Transaction not found");
-
-        const orderAmount = matchedTransaction.orderAmount;
-
-        return User.findOneAndUpdate(
-          { "transactions.merchantTradeNo": merchantTradeNo },
-          {
-            $set: { "transactions.$.status": "SUCCESS" },
-            $inc: { amount: parseInt(orderAmount.replace(/[$,]/g, "")) },
-          },
-          { new: true }
-        );
-      })
-      .then((updatedUser) => {
-        console.log(`Wallet updated for transaction: ${merchantTradeNo}`);
-        res.status(200).send("Webhook processed and wallet updated");
-      })
-      .catch((err) => {
-        console.error(" Webhook error:", err.message);
-        res.status(500).send("Webhook processing failed");
+    try {
+      const user = await User.findOne({
+        "transactions.merchantTradeNo": merchantTradeNo,
       });
+      if (!user) throw new Error("User not found");
+
+      const matchedTransaction = user.transactions.find(
+        (tx) => tx.merchantTradeNo === merchantTradeNo
+      );
+      if (!matchedTransaction) throw new Error("Transaction not found");
+
+      const orderAmount = matchedTransaction.orderAmount;
+
+      const updatedUser = await User.findOneAndUpdate(
+        { "transactions.merchantTradeNo": merchantTradeNo },
+        {
+          $set: { "transactions.$.status": "SUCCESS" },
+          $inc: { amount: parseInt(orderAmount.replace(/[$,]/g, "")) },
+        },
+        { new: true }
+      );
+
+      console.log(`Wallet updated for transaction: ${merchantTradeNo}`);
+      res.status(200).send("Webhook processed and wallet updated");
+    } catch (err) {
+      console.error("Webhook error:", err.message);
+      res.status(500).send("Webhook processing failed");
+    }
   } else {
-    ` Webhook received with status: ${status}`;
+    console.log(`Webhook received with status: ${status}`);
     res.status(200).send("No wallet update needed");
   }
 });
 
-app.route("/no-transaction").get((req, res) => {
-  if (req.isAuthenticated()) {
-    User.findById(req.user._id)
-      .then((user) => {
-        const info = user.information;
-        if (!info) {
-          res.render("information");
-        } else {
-          res.render("no-transaction", {
-            firstname: info.firstname,
-            lastname: info.lastname,
-            amount: user.amount,
-            ID: user.ID,
-            email: user.username,
-          });
-        }
-      })
-      .catch((err) => {
-        console.error("Error:", err);
-        res.status(500).send("Internal server error");
-      });
-  } else {
-    res.redirect("/login");
+app.route("/no-transaction").get(async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect("/login");
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+    const info = user.information;
+
+    if (!info) {
+      return res.render("information");
+    }
+
+    res.render("no-transaction", {
+      firstname: info.firstname,
+      lastname: info.lastname,
+      amount: user.amount,
+      ID: user.ID,
+      email: user.username,
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).send("Internal server error");
   }
 });
 // exchange route
-app.route("/exchange").get((req, res) => {
-  if (req.isAuthenticated()) {
-    User.findById(req.user._id)
-      .then((user) => {
-        const info = user.information;
-        if (!info) {
-          res.render("information");
-        } else {
-          res.render("exchange", {
-            firstname: info.firstname,
-            lastname: info.lastname,
-            amount: user.amount,
-            ID: user.ID,
-            email: user.username,
-          });
-        }
-      })
-      .catch((err) => {
-        console.error("Error:", err);
-        res.status(500).send("Internal server error");
-      });
-  } else {
-    res.redirect("/login");
+app.route("/exchange").get(async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect("/login");
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+    const info = user.information;
+
+    if (!info) {
+      return res.render("information");
+    }
+
+    res.render("exchange", {
+      firstname: info.firstname,
+      lastname: info.lastname,
+      amount: user.amount,
+      ID: user.ID,
+      email: user.username,
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).send("Internal server error");
   }
 });
 //  profile
 app
   .route("/profile")
-  .get((req, res) => {
-    if (req.isAuthenticated()) {
-      User.findById(req.user._id)
-        .then((user) => {
-          const info = user.information;
+  .get(async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.redirect("/login");
+    }
 
-          const DOB = info.DOB.toISOString().substring(0, 10);
-          if (!info) {
-            res.render("information");
-          } else {
-            res.render("profile", {
-              firstname: info.firstname,
-              lastname: info.lastname,
-              address: info.address,
-              number: info.Number,
-              DOB: DOB,
-              email: user.username,
-            });
-          }
-        })
-        .catch((err) => {
-          console.error("Error:", err);
-          res.status(500).send("Internal server error");
-        });
-    } else {
-      res.redirect("/login");
+    try {
+      const user = await User.findById(req.user._id);
+      const info = user.information;
+
+      if (!info) {
+        return res.render("information");
+      }
+
+      const DOB = info.DOB.toISOString().substring(0, 10);
+      res.render("profile", {
+        firstname: info.firstname,
+        lastname: info.lastname,
+        address: info.address,
+        number: info.Number,
+        DOB: DOB,
+        email: user.username,
+      });
+    } catch (err) {
+      console.error("Error:", err);
+      res.status(500).send("Internal server error");
     }
   })
-  .post((req, res) => {
+
+  .post(async (req, res) => {
     if (!req.isAuthenticated()) return res.redirect("/register");
+
     const {
       firstname,
       lastname,
@@ -464,29 +454,28 @@ app
       address,
       amount,
     } = req.body;
-    User.findByIdAndUpdate(req.user._id, {
-      information: {
-        firstname: firstname,
-        lastname: lastname,
-        Number: mobileNumber,
-        companyName: companyName,
-        WebsiteUrl: url,
-        postalCode: postalCode,
-        city: cityName,
-        DOB: DOB,
-        country: country,
-        address: address,
-      },
-    })
-      .then(() => {
-        res.redirect("/profile");
-      })
-      .catch((err) => {
-        console.error("Error saving information:", err);
-        res.status(500).send("Something went wrong.");
+
+    try {
+      await User.findByIdAndUpdate(req.user._id, {
+        information: {
+          firstname,
+          lastname,
+          Number: mobileNumber,
+          companyName,
+          WebsiteUrl: url,
+          postalCode,
+          city: cityName,
+          DOB,
+          country,
+          address,
+        },
       });
-  })
-  .post(() => {});
+      res.redirect("/profile");
+    } catch (err) {
+      console.error("Error saving information:", err);
+      res.status(500).send("Something went wrong.");
+    }
+  });
 // information
 app
   .route("/information")
@@ -497,7 +486,8 @@ app
       res.redirect("/register");
     }
   })
-  .post((req, res) => {
+
+  .post(async (req, res) => {
     if (!req.isAuthenticated()) return res.redirect("/register");
 
     const generateRandomNumber = (min = 10000, max = 100000) =>
@@ -518,29 +508,30 @@ app
       address,
       amount,
     } = req.body;
-    User.findByIdAndUpdate(req.user._id, {
-      information: {
-        firstname: firstname,
-        lastname: lastname,
-        Number: mobileNumber,
-        companyName: companyName,
-        WebsiteUrl: url,
-        postalCode: postalCode,
-        city: cityName,
-        DOB: DOB,
-        country: country,
-        address: address,
-      },
-      amount: parseInt(amount.replace(/[$,]/g, "")),
-      ID: randomNumber,
-    })
-      .then(() => {
-        res.redirect("/dashboard");
-      })
-      .catch((err) => {
-        console.error("Error saving information:", err);
-        res.status(500).send("Something went wrong.");
+
+    try {
+      await User.findByIdAndUpdate(req.user._id, {
+        information: {
+          firstname,
+          lastname,
+          Number: mobileNumber,
+          companyName,
+          WebsiteUrl: url,
+          postalCode,
+          city: cityName,
+          DOB,
+          country,
+          address,
+        },
+        amount: parseInt(amount.replace(/[$,]/g, "")),
+        ID: randomNumber,
       });
+
+      res.redirect("/dashboard");
+    } catch (err) {
+      console.error("Error saving information:", err);
+      res.status(500).send("Something went wrong.");
+    }
   });
 
 // logout handle
@@ -553,6 +544,8 @@ app.get("/logout", function (req, res, next) {
   });
 });
 // app listen
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running on port ${PORT}`);
 });

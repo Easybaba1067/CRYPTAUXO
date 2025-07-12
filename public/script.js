@@ -15,6 +15,7 @@ const contact = document.querySelector(".contact");
 const plan = document.querySelector(".service");
 const myLink = document.querySelectorAll(".links");
 const data = document.querySelector(".live-data");
+const year = document.querySelector(".year");
 
 function scroll(element) {
   document.querySelector(element).scrollIntoView({ behavior: "smooth" });
@@ -58,3 +59,5 @@ socket.addEventListener("message", (event) => {
   div.appendChild(dataFlex);
   data.appendChild(div);
 });
+const currentYear = new Date().getFullYear();
+year.textContent = currentYear;
