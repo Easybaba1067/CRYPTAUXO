@@ -168,9 +168,8 @@ app.route("/dashboard").get((req, res) => {
     fetch(url)
       .then((res) => res.json())
       .then((marketData) => {
-        console.log("Constructor name:", marketData.constructor.name);
         if (!Array.isArray(marketData)) {
-          marketData = []; // fallback to prevent EJS crash
+          marketData = Object.values(marketData);
         }
 
         res.render("dashboard", {
