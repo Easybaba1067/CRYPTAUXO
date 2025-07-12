@@ -7,7 +7,7 @@ const passportLocalMongoose = require("passport-local-mongoose");
 const axios = require("axios");
 const crypto = require("crypto");
 const punycode = require("punycode/");
-const RedisStore = require("connect-redis")(session);
+const MongoStore = require("connect-mongo");
 
 const app = express();
 
@@ -18,12 +18,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-    store: new RedisStore({ client: redisClient }),
-    secret: process.env.SESSION_KEY,
+    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+    secret: "your-secret",
     resave: false,
     saveUninitialized: false,
   })
 );
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -144,47 +145,55 @@ app
 app.route("/dashboard").get((req, res) => {
   if (!req.isAuthenticated()) return res.redirect("/login");
 
-  User.findById(req.user._id)
-    .then((user) => {
-      const info = user.information;
-      const transact = user.transactions;
+  User.findById(req.user._id).then((user) => {
+    const info = user.information;
+    const transact = user.transactions;
 
-      if (!info) return res.render("information");
+    if (!info) return res.render("information");
 
-      const symbols = [
-        "BTCUSDT",
-        "ETHUSDT",
-        "BNBUSDT",
-        "SOLUSDT",
-        "XRPUSDT",
-        "ADAUSDT",
-        "DOGEUSDT",
-        "AVAXUSDT",
-        "LINKUSDT",
-      ];
-      const encoded = encodeURIComponent(JSON.stringify(symbols));
-      const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${encoded}`;
+    const symbols = [
+      "BTCUSDT",
+      "ETHUSDT",
+      "BNBUSDT",
+      "SOLUSDT",
+      "XRPUSDT",
+      "ADAUSDT",
+      "DOGEUSDT",
+      "AVAXUSDT",
+      "LINKUSDT",
+    ];
+    const encoded = encodeURIComponent(JSON.stringify(symbols));
+    const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${encoded}`;
 
-      fetch(url)
-        .then((apiRes) => apiRes.json())
-        .then((marketData) => {
-          res.render("dashboard", {
-            firstname: info.firstname,
-            lastname: info.lastname,
-            amount: user.amount,
-            ID: user.ID,
-            email: user.username,
-            markets: marketData,
-          });
-        })
-        .catch((err) => {
-          console.error("Binance fetch error:", err);
+    fetch(url)
+      .then((res) => res.json())
+      .then((marketData) => {
+        console.log("Constructor name:", marketData.constructor.name);
+        if (!Array.isArray(marketData)) {
+          marketData = []; // fallback to prevent EJS crash
+        }
+
+        res.render("dashboard", {
+          firstname: info.firstname,
+          lastname: info.lastname,
+          amount: user.amount,
+          ID: user.ID,
+          email: user.username,
+          markets: marketData,
         });
-    })
-    .catch((err) => {
-      console.error("User DB error:", err);
-      res.status(500).send("Internal server error");
-    });
+      })
+      .catch((err) => {
+        console.error("Binance fetch error:", err);
+        res.render("dashboard", {
+          firstname: info.firstname,
+          lastname: info.lastname,
+          amount: user.amount,
+          ID: user.ID,
+          email: user.username,
+          markets: [], // fallback on error
+        });
+      });
+  });
 });
 // account histoty route
 app
