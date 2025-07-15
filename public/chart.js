@@ -1,43 +1,44 @@
-const apiUrl = "https://api.coingecko.com/api/v3/coins";
+const apiUrl = "https://api.binance.com/api/v3/klines";
 const limit = 100;
 
 let chart, candlestickSeries;
-let currentSymbol = "bitcoin"; // CoinGecko ID
-let currentInterval = "hourly"; // accepted: "daily", "hourly"
+let currentSymbol = "BTCUSDT"; // Binance symbol format
+let currentInterval = "1h"; // Binance intervals: 1m, 5m, 1h, 1d etc.
 
 const symbolInput = document.getElementById("symbol");
 const intervalInput = document.getElementById("interval");
 const updateButton = document.getElementById("updateChart");
 const container = document.getElementById("chart-container");
 
-function fetchCandlestickData(coinId, interval) {
-  return fetch(
-    `${apiUrl}/${coinId}/market_chart?vs_currency=usd&days=1&interval=${interval}`
-  )
+// 🧠 Fetch and format Binance candlestick data
+function fetchCandlestickData(symbol, interval) {
+  const url = `${apiUrl}?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`;
+
+  return fetch(url)
     .then((res) => res.json())
     .then((data) => {
-      // CoinGecko returns [timestamp, price]
-      const prices = data.prices.slice(-limit);
-
-      const chartData = prices.map((point, i, arr) => {
-        const time = Math.floor(point[0] / 1000);
-        const open = i > 0 ? arr[i - 1][1] : point[1];
-        const close = point[1];
-        const high = Math.max(open, close);
-        const low = Math.min(open, close);
-
-        return { time, open, high, low, close };
-      });
+      // Binance returns: [open time, open, high, low, close, ...]
+      const chartData = data.map((candle) => ({
+        time: Math.floor(candle[0] / 1000), // convert to UNIX
+        open: parseFloat(candle[1]),
+        high: parseFloat(candle[2]),
+        low: parseFloat(candle[3]),
+        close: parseFloat(candle[4]),
+      }));
 
       return chartData;
     });
 }
 
+// 📊 Initialize TradingView-style chart
 function createChart(chartData) {
   chart = LightweightCharts.createChart(container, {
     width: container.clientWidth,
     height: container.clientHeight,
-    layout: { backgroundColor: "#ffffff", textColor: "#333333" },
+    layout: {
+      backgroundColor: "#ffffff",
+      textColor: "#333333",
+    },
     grid: {
       vertLines: { color: "#f0f0f0" },
       horzLines: { color: "#f0f0f0" },
@@ -59,6 +60,7 @@ function createChart(chartData) {
   });
 }
 
+// 🔄 Update chart with new data
 function updateChart(symbol, interval) {
   fetchCandlestickData(symbol, interval)
     .then((chartData) => {
@@ -71,8 +73,9 @@ function updateChart(symbol, interval) {
     .catch((err) => console.error("Error updating chart:", err));
 }
 
+// 🕹️ Bind update events
 updateButton.addEventListener("click", () => {
-  const symbol = symbolInput.value.trim().toLowerCase(); // lowercase for CoinGecko
+  const symbol = symbolInput.value.trim().toUpperCase();
   const interval = intervalInput.value.trim();
 
   if (!symbol || !interval) {
@@ -85,10 +88,12 @@ updateButton.addEventListener("click", () => {
   updateChart(currentSymbol, currentInterval);
 });
 
+// 🚀 Load chart on page load
 window.addEventListener("DOMContentLoaded", () => {
   updateChart(currentSymbol, currentInterval);
 
+  // refresh every minute
   setInterval(() => {
     updateChart(currentSymbol, currentInterval);
-  }, 60000); // Update chart every minute (CoinGecko cache limit)
+  }, 60000);
 });

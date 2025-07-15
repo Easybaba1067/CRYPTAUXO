@@ -1,94 +1,116 @@
-// JQuery
-$(document).ready(function () {
+// ✅ Menu toggle handlers
+$(document).ready(() => {
   $(".bi-list").click(() => {
     $(".bi-x-lg").show("slow");
     $(".bi-list").hide("slow");
     $(".nav ul").show("slow");
   });
-});
-$(".bi-x-lg").click(() => {
-  $(".bi-x-lg").hide("slow");
-  $(".bi-list").show("slow");
-  $(".nav ul").hide("slow");
-});
 
-setInterval(() => {
-  const rawBTC = document.getElementById("account-balance").textContent.trim();
-  const btcAmount = parseFloat(rawBTC.replace(/[^\d.]/g, ""));
-
-  // ✅ Pull BTC price from CoinGecko
-  fetch(
-    "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      const btcPrice = data.bitcoin.usd;
-      const usdAmount = btcAmount * btcPrice;
-
-      document.getElementById("balance").textContent = `$${usdAmount.toFixed(
-        2
-      )}`;
-    })
-    .catch((error) => console.error("CoinGecko fetch error:", error));
-}, 10000); // Updates every 10 seconds
-// Account transaction color type
-
-transactionColor.forEach((transaction) => {
-  if (transaction.textContent === "withdraw") {
-    transaction.style.color = "red";
-  } else {
-    transaction.style.color = "#7ddd74c0";
-  }
-});
-function removeClass(events) {
-  events.forEach((event) => {
-    event.classList.remove("active");
+  $(".bi-x-lg").click(() => {
+    $(".bi-x-lg").hide("slow");
+    $(".bi-list").show("slow");
+    $(".nav ul").hide("slow");
   });
+});
+
+// ✅ Transaction color styling
+transactionColor.forEach((transaction) => {
+  transaction.style.color =
+    transaction.textContent === "withdraw" ? "red" : "#7ddd74c0";
+});
+
+// ✅ Class toggles for tab switching
+function removeClass(events) {
+  events.forEach((event) => event.classList.remove("active"));
 }
-function transferingClick(events, eventSecounds) {
+
+function transferingClick(events, eventSections) {
   events.forEach((event, index) => {
     event.addEventListener("click", () => {
       removeClass(events);
       event.classList.add("active");
-      eventSecounds.forEach((secound, i) => {
-        if (index === i) {
-          removeClass(eventSecounds);
-          secound.classList.add("active");
+
+      eventSections.forEach((section, i) => {
+        if (i === index) {
+          removeClass(eventSections);
+          section.classList.add("active");
         }
       });
     });
   });
 }
+
 transferingClick(heads, forms);
 transferingClick(withdraw, withdrawActive);
 
-const scrollSpead = 200;
+// ✅ Auto-scroll display container
+const scrollSpeed = 200;
 function dataScroll() {
-  data.scrollLeft += scrollSpead / 60;
+  data.scrollLeft += scrollSpeed / 60;
   requestAnimationFrame(dataScroll);
 }
 dataScroll();
 
-// Create WebSocket connection.
-setInterval(async () => {
-  try {
-    const res = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,solana&vs_currencies=usd"
-    );
-    const data = await res.json();
+// ✅ Real-time price updates using Binance WebSocket
+const socket = new WebSocket("wss://stream.binance.com:9443/ws/!ticker@arr");
 
-    for (const [id, info] of Object.entries(data)) {
+socket.onmessage = (event) => {
+  const tickers = JSON.parse(event.data);
+  dataContainer.innerHTML = ""; // Clear previous entries
+
+  const symbolsToWatch = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT"];
+
+  tickers.forEach((ticker) => {
+    if (symbolsToWatch.includes(ticker.s)) {
       const div = document.createElement("div");
       div.className = "data";
       div.innerHTML = `
-        <h4 style="color: rgb(52,241,52)">${id.toUpperCase()}</h4>
+        <h4 style="color: rgb(52,241,52)">${ticker.s.replace("USDT", "")}</h4>
         <div class="data-flex">
-          <h2 style="color: red">$${info.usd}</h2>
+          <h2 style="color: red">$${parseFloat(ticker.c).toFixed(2)}</h2>
         </div>
       `;
-      dataContainer.appendChild(div); // Assuming `dataContainer` is your wrapper
+      dataContainer.appendChild(div);
     }
-  } catch (err) {
-    console.error("CoinGecko polling error:", err);
+  });
+};
+
+// ✅ Update account balance value in USD
+function updateBalanceDisplay(priceMap) {
+  const rawBTC = document.getElementById("account-balance").textContent.trim();
+  const btcAmount = parseFloat(rawBTC.replace(/[^\d.]/g, ""));
+
+  if (priceMap["BTCUSDT"]) {
+    const usdAmount = btcAmount * priceMap["BTCUSDT"];
+    document.getElementById("balance").textContent = `$${usdAmount.toFixed(2)}`;
   }
-}, 5000); // Poll every 5 seconds
+}
+
+// Optional: maintain latest prices in memory for balance updating
+let latestPrices = {};
+socket.onmessage = (event) => {
+  const tickers = JSON.parse(event.data);
+  latestPrices = {}; // reset
+
+  const symbolsToWatch = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT"];
+  dataContainer.innerHTML = "";
+
+  tickers.forEach((ticker) => {
+    if (symbolsToWatch.includes(ticker.s)) {
+      latestPrices[ticker.s] = parseFloat(ticker.c);
+
+      const div = document.createElement("div");
+      div.className = "data";
+      div.innerHTML = `
+        <h4 style="color: rgb(52,241,52)">${ticker.s.replace("USDT", "")}</h4>
+        <div class="data-flex">
+          <h2 style="color: red">$${parseFloat(ticker.c).toFixed(2)}</h2>
+        </div>
+      `;
+      dataContainer.appendChild(div);
+    }
+  });
+
+  // Update BTC-based balance
+  updateBalanceDisplay(latestPrices);
+};
