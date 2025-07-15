@@ -91,7 +91,7 @@
         </div>
         <div class="account-balance">
           <h4>Account balance</h4>
-          <p id="account-balance">0.00000000 BTC</p>
+          <p id="account-balance"><%= amount %> BTC</p>
         </div>
         <div class="account-value">
           <h4>Estimated value</h4>
@@ -112,22 +112,29 @@
             <li class="head active">Crypto</li>
           </div>
         </div>
-        <form
-          class="crypto-deposit active form-active"
-          action="/account-history"
-          method="post"
-        >
-          <div>
-            <label>Amount (USD)</label>
-            <select name="amount" id="">
-              <option value="2500">$900</option>
-              <option value="6000">$1350</option>
-              <option value="7000">$1800</option>
-              <option value="3900">$2250</option>
+        <div class="payment-card">
+          <div class="div">
+            <label for="amountSelect">Amount</label>
+            <select id="amountSelect">
+              <option value="900">Pay $900</option>
+              <option value="1350">Pay $1350</option>
+              <option value="1800">Pay $1800</option>
+              <option value="2250">Pay $2250</option>
             </select>
           </div>
-          <button type="submit">deposit</button>
-        </form>
+
+          <div class="div">
+            <p id="amountSummary">
+              Send <strong> $900</strong> via
+              <strong>Bitcoin Network</strong> to the wallet below
+            </p>
+          </div>
+          <div class="div">
+            <code id="wallet" style="font-size: larger"
+              >1KeaqofrsJ8KcYXFzD5FzrYbsZBa4uMQi</code
+            >
+          </div>
+        </div>
       </div>
       <div class="withdraw">
         <div class="deposit-head">
@@ -136,41 +143,6 @@
             <li class="head-withdraw active">Crypto</li>
           </div>
         </div>
-        <form class="active withdraw-active" action="">
-          <div class="radio-check">
-            <div>
-              <input type="radio" id="option-1" name="radio-group" />
-              <label for="option-1">BTC</label>
-            </div>
-            <div>
-              <input type="radio" id="option-2" name="radio-group" />
-              <label for="option-2">SOL</label>
-            </div>
-            <div>
-              <input type="radio" id="option-3" name="radio-group" />
-              <label for="option-3">BNB</label>
-            </div>
-            <div>
-              <input type="radio" id="option-4" name="radio-group" />
-              <label for="option-4">ETH</label>
-            </div>
-            <div>
-              <input type="radio" id="option-5" name="radio-group" />
-              <label for="option-5">EOS</label>
-            </div>
-            <div>
-              <input type="radio" id="option-6" name="radio-group" />
-              <label for="option-6">USDT</label>
-            </div>
-          </div>
-          <div class="input">
-            <input type="text" placeholder="Wallet address" />
-          </div>
-          <div class="input">
-            <input type="text" placeholder="Institution name" />
-          </div>
-          <button type="submit">withdraw</button>
-        </form>
       </div>
     </div>
     <div class="screen">
@@ -181,6 +153,7 @@
         </div>
       </div>
     </div>
+    <script src="/account-history.js"></script>
     <script src="/dashboard.js"></script>
   </body>
 </html>

@@ -13,26 +13,24 @@ $(".bi-x-lg").click(() => {
 });
 
 //btc increament
-window.addEventListener("DOMContentLoaded", function () {
-  // Get fiat amount from #balance
-  const rawAmount = document.getElementById("balance").textContent.trim();
-  const fiatAmount = parseFloat(rawAmount.replace(/[^\d.]/g, ""));
+setInterval(() => {
+  // Get BTC amount from #account-balance (e.g., "0.01500000 BTC")
+  const rawBTC = document.getElementById("account-balance").textContent.trim();
+  const btcAmount = parseFloat(rawBTC.replace(/[^\d.]/g, "")); // Remove "BTC"
 
   // Fetch BTC price from Binance
   fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT")
     .then((response) => response.json())
     .then((data) => {
-      const btcPrice = parseFloat(data.price);
-      const fiatAmount = parseFloat(
-        document.getElementById("balance").textContent.replace(/[^\d.]/g, "")
-      );
-      const btcAmount = fiatAmount / btcPrice;
-      document.getElementById(
-        "account-balance"
-      ).textContent = `${btcAmount.toFixed(8)} BTC`;
+      const btcPrice = parseFloat(data.price); // e.g. 62300.45
+      const usdAmount = btcAmount * btcPrice;
+
+      document.getElementById("balance").textContent = `$${usdAmount.toFixed(
+        2
+      )}`;
     })
     .catch((error) => console.error("Fetch error:", error));
-});
+}, 10000); // Updates every 10 seconds
 const transactionColor = document.querySelectorAll(".transaction-color");
 const heads = document.querySelectorAll(".head");
 const forms = document.querySelectorAll(".form-active");
