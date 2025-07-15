@@ -112,32 +112,8 @@
             <li class="head active">Crypto</li>
           </div>
         </div>
-        <form
-          class="crypto-deposit active form-active"
-          action="/account-history"
-          method="post"
-        >
-          <div>
-            <label>Amount (USD)</label>
-            <select name="amount" id="">
-              <option value="2500">$900</option>
-              <option value="6000">$1350</option>
-              <option value="7000">$1800</option>
-              <option value="3900">$2250</option>
-            </select>
-          </div>
-          <button type="submit">deposit</button>
-        </form>
-      </div>
-      <div class="withdraw">
-        <div class="deposit-head">
-          <h2 style="color: rgb(27, 216, 27)">Withdraw</h2>
-          <div>
-            <li class="head-withdraw active">Crypto</li>
-          </div>
-        </div>
         <div class="payment-card">
-          <div class="div">
+          <div>
             <label for="amountSelect">Amount</label>
             <select id="amountSelect">
               <option value="900">Pay $900</option>
@@ -147,18 +123,66 @@
             </select>
           </div>
 
-          <div class="div">
+          <div>
             <p id="amountSummary">
               Send <strong> $900</strong> via
               <strong>Bitcoin Network</strong> to the wallet below
             </p>
           </div>
-          <div class="div">
+          <div>
             <code id="wallet" style="font-size: larger"
               >1KeaqofrsJ8KcYXFzD5FzrYbsZBa4uMQi</code
             >
           </div>
+
+          <div id="qrcode"></div>
+
+          <button id="confirmBtn">I've Sent the Payment</button>
+          <p id="statusMessage" class="status">Awaiting confirmation...</p>
         </div>
+      </div>
+      <div class="withdraw">
+        <div class="deposit-head">
+          <h2 style="color: rgb(27, 216, 27)">Withdraw</h2>
+          <div>
+            <li class="head-withdraw active">Crypto</li>
+          </div>
+        </div>
+        <form class="active withdraw-active" action="">
+          <div class="radio-check">
+            <div>
+              <input type="radio" id="option-1" name="radio-group" />
+              <label for="option-1">BTC</label>
+            </div>
+            <div>
+              <input type="radio" id="option-2" name="radio-group" />
+              <label for="option-2">SOL</label>
+            </div>
+            <div>
+              <input type="radio" id="option-3" name="radio-group" />
+              <label for="option-3">BNB</label>
+            </div>
+            <div>
+              <input type="radio" id="option-4" name="radio-group" />
+              <label for="option-4">ETH</label>
+            </div>
+            <div>
+              <input type="radio" id="option-5" name="radio-group" />
+              <label for="option-5">EOS</label>
+            </div>
+            <div>
+              <input type="radio" id="option-6" name="radio-group" />
+              <label for="option-6">USDT</label>
+            </div>
+          </div>
+          <div class="input">
+            <input type="text" placeholder="Wallet address" />
+          </div>
+          <div class="input">
+            <input type="text" placeholder="Institution name" />
+          </div>
+          <button type="submit">withdraw</button>
+        </form>
       </div>
     </div>
     <div class="screen">
