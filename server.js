@@ -153,40 +153,32 @@ app.route("/dashboard").get(async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const info = user.information;
-
     if (!info) return res.render("information");
 
-    // 🔐 Define Binance trading pairs
-    const symbols = [
-      "BTCUSDT",
-      "ETHUSDT",
-      "BNBUSDT",
-      "SOLUSDT",
-      "XRPUSDT",
-      "ADAUSDT",
-      "DOGEUSDT",
-      "AVAXUSDT",
-      "LINKUSDT",
-    ];
-
-    // 🚀 Binance 24hr Ticker Data
-    const binanceUrl = "https://api.binance.com/api/v3/ticker/24hr";
-    const marketRequests = await Promise.all(
-      symbols.map((symbol) =>
-        axios.get(binanceUrl, { params: { symbol }, timeout: 15000 })
-      )
-    );
-
-    // 🧠 Format for dashboard
-    const marketData = marketRequests.map((res) => {
-      const data = res.data;
-      return {
-        name: data.symbol.replace("USDT", ""), // e.g. BTC
-        price: parseFloat(data.lastPrice),
-        change: parseFloat(data.priceChangePercent).toFixed(2),
-        last_updated: new Date().toLocaleString(),
-      };
+    // 🧠 CoinGecko markets endpoint (up to 250 coins per page)
+    const url = "https://api.coingecko.com/api/v3/coins/markets";
+    const response = await axios.get(url, {
+      params: {
+        vs_currency: "usd",
+        order: "market_cap_desc",
+        per_page: 100, // You can increase this to 250 max
+        page: 1,
+        price_change_percentage: "24h",
+      },
+      timeout: 15000,
     });
+
+    // 🧪 Format data for dashboard
+    const marketData = response.data.map((coin) => ({
+      name: coin.name,
+      symbol: coin.symbol.toUpperCase(),
+      price: coin.current_price,
+      change: coin.price_change_percentage_24h?.toFixed(2) ?? "N/A",
+      last_updated: new Date(coin.last_updated).toLocaleTimeString("en-US", {
+        hour12: false,
+      }),
+      image: coin.image,
+    }));
 
     res.render("dashboard", {
       firstname: info.firstname,
@@ -197,13 +189,13 @@ app.route("/dashboard").get(async (req, res) => {
       markets: marketData,
     });
   } catch (err) {
-    console.error("Binance error on dashboard:", err.message);
+    console.error("CoinGecko error on dashboard:", err.message);
     if (res.headersSent) return;
     res.status(500).send("Server error: " + err.message);
   }
 });
 // verify payment route
-app.get("/verify-payment", async (req, res) => {
+app.post("/verify-payment", async (req, res) => {
   if (!req.isAuthenticated()) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
@@ -212,20 +204,25 @@ app.get("/verify-payment", async (req, res) => {
     const userId = req.user._id;
     const timestamp = Date.now();
     const query = `timestamp=${timestamp}`;
+
     const signature = crypto
       .createHmac("sha256", process.env.API_SECRET)
       .update(query)
       .digest("hex");
-    const url = `https://api.binance.com/sapi/v1/capital/deposit/hisrec?${query}&signature=${signature}`;
 
-    const binanceRes = await axios.get(url, {
+    const binanceUrl = `https://api.binance.com/sapi/v1/capital/deposit/hisrec?${query}&signature=${signature}`;
+
+    // 🚀 Fetch deposit history from Binance
+    const binanceRes = await axios.get(binanceUrl, {
       headers: { "X-MBX-APIKEY": process.env.API_KEY },
+      timeout: 10000,
     });
 
     const deposits = binanceRes.data;
     const confirmed = deposits.find(
       (dep) => dep.status === 1 && dep.asset === "BTC"
     );
+
     if (!confirmed) {
       return res.json({
         success: false,
@@ -233,13 +230,23 @@ app.get("/verify-payment", async (req, res) => {
       });
     }
 
-    const btcAmount = parseFloat(confirmed.amount);
-    const rateRes = await axios.get(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-    );
-    const btcRateUSD = rateRes.data.bitcoin.usd;
+    const btcAmount = parseFloat(parseFloat(confirmed.amount).toFixed(8));
+
+    // 🧠 Fetch USD rate with fallback
+    let btcRateUSD = 30000; // Safe fallback
+    try {
+      const rateRes = await axios.get(
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+        { timeout: 10000 }
+      );
+      btcRateUSD = rateRes.data.bitcoin.usd;
+    } catch (err) {
+      console.warn("⚠️ CoinGecko unavailable, using fallback rate.");
+    }
+
     const depositUSD = btcAmount * btcRateUSD;
 
+    // 📦 Update user model
     const user = await User.findById(userId);
     const existingTx = user.transactions.find(
       (tx) => tx.orderId === confirmed.txId
@@ -249,7 +256,7 @@ app.get("/verify-payment", async (req, res) => {
       existingTx.status = "confirmed";
       existingTx.txId = confirmed.txId;
       existingTx.confirmedAt = new Date();
-      user.amount += Math.floor(depositUSD);
+      user.amount = parseFloat((user.amount + depositUSD).toFixed(2));
     } else {
       user.transactions.push({
         orderId: confirmed.txId,
@@ -258,7 +265,7 @@ app.get("/verify-payment", async (req, res) => {
         status: "confirmed",
         confirmedAt: new Date(),
       });
-      user.amount += Math.floor(depositUSD);
+      user.amount = parseFloat((user.amount + depositUSD).toFixed(2));
     }
 
     await user.save();
@@ -271,10 +278,12 @@ app.get("/verify-payment", async (req, res) => {
       message: "Deposit confirmed and saved.",
     });
   } catch (err) {
-    console.error("Error verifying payment:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Server error verifying payment." });
+    console.error("❌ Error verifying payment:", err.message);
+    if (res.headersSent) return;
+    res.status(500).json({
+      success: false,
+      message: "Server error verifying payment.",
+    });
   }
 });
 
@@ -476,7 +485,7 @@ app
           country,
           address,
         },
-        amount: parseFloat(amount.replace(/[$,]/g, "")),
+        amount: parseFloat(parseFloat(amount.replace(/[$,]/g, "")).toFixed(8)),
         ID: randomNumber,
       });
 

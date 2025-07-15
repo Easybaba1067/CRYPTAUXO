@@ -28,45 +28,7 @@ myLink.forEach((link) => {
     scroll(id);
   });
 });
-async function updateTicker() {
-  const coinIds = [
-    "bitcoin",
-    "ethereum",
-    "binancecoin",
-    "solana",
-    "ripple",
-    "cardano",
-    "dogecoin",
-    "polygon",
-    "polkadot",
-    "internet-computer",
-  ];
 
-  try {
-    const res = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(
-        ","
-      )}&vs_currencies=usd`
-    );
-    const data = await res.json();
-
-    const tickerFeed = document.getElementById("tickerFeed");
-    tickerFeed.innerHTML = "";
-
-    const feedItems = Object.entries(data).map(([id, info]) => {
-      return `<span style="margin-right: 40px;">
-        <strong>${id.toUpperCase()}</strong> 💲${info.usd}
-      </span>`;
-    });
-
-    tickerFeed.innerHTML = feedItems.join(" ");
-  } catch (err) {
-    console.error("CoinGecko ticker error:", err.message);
-  }
-}
-
-setInterval(updateTicker, 30000); // refresh prices every 30 sec
-updateTicker();
 // Create WebSocket connection.
 const coinIds = [
   "bitcoin",
@@ -79,6 +41,16 @@ const coinIds = [
   "polygon",
   "polkadot",
   "internet-computer",
+  "tron",
+  "avalanche-2",
+  "uniswap",
+  "stellar",
+  "cosmos",
+  "filecoin",
+  "aptos",
+  "tezos",
+  "arbitrum",
+  "near",
 ];
 
 const container = document.querySelector(".live-data");
@@ -91,7 +63,6 @@ async function simulateCoinGeckoStream() {
       )}&vs_currencies=usd`
     );
     const data = await res.json();
-
     const timestamp = new Date().toLocaleTimeString();
 
     // Clear old entries

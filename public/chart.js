@@ -1,44 +1,63 @@
-const apiUrl = "https://api.binance.com/api/v3/klines";
 const limit = 100;
-
 let chart, candlestickSeries;
-let currentSymbol = "BTCUSDT"; // Binance symbol format
-let currentInterval = "1h"; // Binance intervals: 1m, 5m, 1h, 1d etc.
+
+let currentSymbol = "BTC-USD"; // Coinbase format
+let currentInterval = "1h"; // Supported: 1m, 5m, 15m, 1h, 6h, 1d
 
 const symbolInput = document.getElementById("symbol");
 const intervalInput = document.getElementById("interval");
 const updateButton = document.getElementById("updateChart");
 const container = document.getElementById("chart-container");
 
-// 🧠 Fetch and format Binance candlestick data
+// 🧠 Map interval string to Coinbase granularity in seconds
+function getGranularity(interval) {
+  switch (interval) {
+    case "1m":
+      return 60;
+    case "5m":
+      return 300;
+    case "15m":
+      return 900;
+    case "1h":
+      return 3600;
+    case "6h":
+      return 21600;
+    case "1d":
+      return 86400;
+    default:
+      return 3600;
+  }
+}
+
+// 📊 Fetch candle data from Coinbase
 function fetchCandlestickData(symbol, interval) {
-  const url = `${apiUrl}?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`;
+  const granularity = getGranularity(interval);
+  const end = Math.floor(Date.now() / 1000);
+  const start = end - granularity * limit;
+
+  const url = `https://api.pro.coinbase.com/products/${symbol}/candles?granularity=${granularity}&start=${start}&end=${end}`;
 
   return fetch(url)
     .then((res) => res.json())
     .then((data) => {
-      // Binance returns: [open time, open, high, low, close, ...]
-      const chartData = data.map((candle) => ({
-        time: Math.floor(candle[0] / 1000), // convert to UNIX
-        open: parseFloat(candle[1]),
-        high: parseFloat(candle[2]),
-        low: parseFloat(candle[3]),
-        close: parseFloat(candle[4]),
-      }));
-
-      return chartData;
+      return data
+        .map((candle) => ({
+          time: candle[0], // UNIX timestamp
+          low: parseFloat(candle[1]),
+          high: parseFloat(candle[2]),
+          open: parseFloat(candle[3]),
+          close: parseFloat(candle[4]),
+        }))
+        .reverse(); // Coinbase returns descending order
     });
 }
 
-// 📊 Initialize TradingView-style chart
+// 📈 Initialize Lightweight Charts
 function createChart(chartData) {
   chart = LightweightCharts.createChart(container, {
     width: container.clientWidth,
     height: container.clientHeight,
-    layout: {
-      backgroundColor: "#ffffff",
-      textColor: "#333333",
-    },
+    layout: { backgroundColor: "#fff", textColor: "#333" },
     grid: {
       vertLines: { color: "#f0f0f0" },
       horzLines: { color: "#f0f0f0" },
@@ -48,7 +67,6 @@ function createChart(chartData) {
   candlestickSeries = chart.addCandlestickSeries({
     upColor: "#26a69a",
     downColor: "#ef5350",
-    borderVisible: false,
     wickUpColor: "#26a69a",
     wickDownColor: "#ef5350",
   });
@@ -60,7 +78,7 @@ function createChart(chartData) {
   });
 }
 
-// 🔄 Update chart with new data
+// 🔄 Refresh chart with new data
 function updateChart(symbol, interval) {
   fetchCandlestickData(symbol, interval)
     .then((chartData) => {
@@ -70,12 +88,12 @@ function updateChart(symbol, interval) {
         candlestickSeries.setData(chartData);
       }
     })
-    .catch((err) => console.error("Error updating chart:", err));
+    .catch((err) => console.error("Chart update error:", err));
 }
 
-// 🕹️ Bind update events
+// 🕹️ User interaction
 updateButton.addEventListener("click", () => {
-  const symbol = symbolInput.value.trim().toUpperCase();
+  const symbol = symbolInput.value.trim().toUpperCase() + "-USD";
   const interval = intervalInput.value.trim();
 
   if (!symbol || !interval) {
@@ -88,12 +106,10 @@ updateButton.addEventListener("click", () => {
   updateChart(currentSymbol, currentInterval);
 });
 
-// 🚀 Load chart on page load
+// 🚀 Initialize chart on page load
 window.addEventListener("DOMContentLoaded", () => {
   updateChart(currentSymbol, currentInterval);
-
-  // refresh every minute
   setInterval(() => {
     updateChart(currentSymbol, currentInterval);
-  }, 60000);
+  }, 60000); // refresh every minute
 });

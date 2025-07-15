@@ -95,13 +95,17 @@
         <div class="account-value">
           <h4>Estimated value</h4>
           <p id="balance">
+            $
             <span class="deposit-btn"
               ><a href="/account-history">Deposit</a></span
             >
           </p>
         </div>
       </div>
-      <div class="live-data"></div>
+      <div
+        class="live-data"
+        style="overflow-x: auto; white-space: nowrap"
+      ></div>
       <div class="recent-transactions">
         <h3>Recent orders</h3>
         <div class="transaction-container">
@@ -114,7 +118,7 @@
           <div class="market-record">
             <h4>Symbols</h4>
             <% if (Array.isArray(markets)) { %> <% markets.forEach(m => { %>
-            <li><%= m.symbol %></li>
+            <li><%= m. name %></li>
             <% }) %> <% } else { %>
             <li>Market data is not available</li>
             <% } %>
@@ -122,7 +126,7 @@
           <div class="market-record">
             <h4>Price</h4>
             <% if (Array.isArray(markets)) { %> <% markets.forEach(m => { %>
-            <li><%= m.lastPrice %></li>
+            <li><%= m.price %></li>
             <% }) %> <% } else { %>
             <li>Market data is not available</li>
             <% } %>
@@ -130,7 +134,7 @@
           <div class="market-record">
             <h4>24 Change</h4>
             <% if (Array.isArray(markets)) { %> <% markets.forEach(m => { %>
-            <li><%= m.priceChange %></li>
+            <li><%= m.change %></li>
             <% }) %> <% } else { %>
             <li>Market data is not available</li>
             <% } %>
@@ -138,15 +142,7 @@
           <div class="market-record">
             <h4>Volume</h4>
             <% if (Array.isArray(markets)) { %> <% markets.forEach(m => { %>
-            <li><%= m.volume %></li>
-            <% }) %> <% } else { %>
-            <li>Market data is not available</li>
-            <% } %>
-          </div>
-          <div class="market-record">
-            <h4>Ask price</h4>
-            <% if (Array.isArray(markets)) { %> <% markets.forEach(m => { %>
-            <li><%= m.askPrice %></li>
+            <li><%= m.last_updated %></li>
             <% }) %> <% } else { %>
             <li>Market data is not available</li>
             <% } %>
