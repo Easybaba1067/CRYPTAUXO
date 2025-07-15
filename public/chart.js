@@ -1,27 +1,36 @@
-const apiUrl = "https://api.binance.com/api/v3/klines";
+const apiUrl = "https://api.coingecko.com/api/v3/coins";
 const limit = 100;
 
 let chart, candlestickSeries;
-let currentSymbol = "BTCUSDT";
-let currentInterval = "5m";
+let currentSymbol = "bitcoin"; // CoinGecko ID
+let currentInterval = "hourly"; // accepted: "daily", "hourly"
 
 const symbolInput = document.getElementById("symbol");
 const intervalInput = document.getElementById("interval");
 const updateButton = document.getElementById("updateChart");
 const container = document.getElementById("chart-container");
 
-function fetchCandlestickData(symbol, interval) {
-  return fetch(`${apiUrl}?symbol=${symbol}&interval=${interval}&limit=${limit}`)
+function fetchCandlestickData(coinId, interval) {
+  return fetch(
+    `${apiUrl}/${coinId}/market_chart?vs_currency=usd&days=1&interval=${interval}`
+  )
     .then((res) => res.json())
-    .then((data) =>
-      data.map((candle) => ({
-        time: candle[0] / 1000,
-        open: parseFloat(candle[1]),
-        high: parseFloat(candle[2]),
-        low: parseFloat(candle[3]),
-        close: parseFloat(candle[4]),
-      }))
-    );
+    .then((data) => {
+      // CoinGecko returns [timestamp, price]
+      const prices = data.prices.slice(-limit);
+
+      const chartData = prices.map((point, i, arr) => {
+        const time = Math.floor(point[0] / 1000);
+        const open = i > 0 ? arr[i - 1][1] : point[1];
+        const close = point[1];
+        const high = Math.max(open, close);
+        const low = Math.min(open, close);
+
+        return { time, open, high, low, close };
+      });
+
+      return chartData;
+    });
 }
 
 function createChart(chartData) {
@@ -63,7 +72,7 @@ function updateChart(symbol, interval) {
 }
 
 updateButton.addEventListener("click", () => {
-  const symbol = symbolInput.value.toUpperCase().trim();
+  const symbol = symbolInput.value.trim().toLowerCase(); // lowercase for CoinGecko
   const interval = intervalInput.value.trim();
 
   if (!symbol || !interval) {
@@ -81,5 +90,5 @@ window.addEventListener("DOMContentLoaded", () => {
 
   setInterval(() => {
     updateChart(currentSymbol, currentInterval);
-  }, 1000); // Update chart every second
+  }, 60000); // Update chart every minute (CoinGecko cache limit)
 });

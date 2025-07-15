@@ -28,36 +28,96 @@ myLink.forEach((link) => {
     scroll(id);
   });
 });
-const scrollSpead = 200;
-function dataScroll() {
-  data.scrollLeft += scrollSpead / 60;
-  requestAnimationFrame(dataScroll);
+async function updateTicker() {
+  const coinIds = [
+    "bitcoin",
+    "ethereum",
+    "binancecoin",
+    "solana",
+    "ripple",
+    "cardano",
+    "dogecoin",
+    "polygon",
+    "polkadot",
+    "internet-computer",
+  ];
+
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(
+        ","
+      )}&vs_currencies=usd`
+    );
+    const data = await res.json();
+
+    const tickerFeed = document.getElementById("tickerFeed");
+    tickerFeed.innerHTML = "";
+
+    const feedItems = Object.entries(data).map(([id, info]) => {
+      return `<span style="margin-right: 40px;">
+        <strong>${id.toUpperCase()}</strong> 💲${info.usd}
+      </span>`;
+    });
+
+    tickerFeed.innerHTML = feedItems.join(" ");
+  } catch (err) {
+    console.error("CoinGecko ticker error:", err.message);
+  }
 }
-dataScroll();
 
+setInterval(updateTicker, 30000); // refresh prices every 30 sec
+updateTicker();
 // Create WebSocket connection.
-var socket = new WebSocket(
-  "wss://stream.binance.com:9443/stream?streams=btcusdt@trade/ethusdt@trade/bnbusdt@trade/solusdt@trade/xrpusdt@trade/adausdt@trade/dogeusdt@trade/maticusdt@trade/dotusdt@trade/itcusdt@trade"
-);
-// Listen for messages
-socket.addEventListener("message", (event) => {
-  raw = JSON.parse(event.data);
-  output = raw.data;
-  // console.log(output);
+const coinIds = [
+  "bitcoin",
+  "ethereum",
+  "binancecoin",
+  "solana",
+  "ripple",
+  "cardano",
+  "dogecoin",
+  "polygon",
+  "polkadot",
+  "internet-computer",
+];
 
-  // // parent div
-  const div = document.createElement("div");
-  div.className = "data";
-  div.innerHTML = `<h4 style="color:  rgb(52, 241, 52)">${output.s}</h4>`;
+const container = document.querySelector(".live-data");
 
-  // // nested div
-  const dataFlex = document.createElement("div");
-  dataFlex.className = "data-flex";
-  dataFlex.innerHTML = `<h2 style="color: red">${output.t}</h2><p>$${output.p}</p>`;
+async function simulateCoinGeckoStream() {
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(
+        ","
+      )}&vs_currencies=usd`
+    );
+    const data = await res.json();
 
-  // append
-  div.appendChild(dataFlex);
-  data.appendChild(div);
-});
+    const timestamp = new Date().toLocaleTimeString();
+
+    // Clear old entries
+    container.innerHTML = "";
+
+    for (const [id, info] of Object.entries(data)) {
+      const div = document.createElement("div");
+      div.className = "data";
+      div.innerHTML = `
+          <h4 style="color: rgb(52, 241, 52); margin-bottom: 0;">${id.toUpperCase()}</h4>
+          <div class="data-flex">
+            <h2 style="color: red; margin: 0;">$${info.usd}</h2>
+            <p style="margin: 0; font-size: 12px;">Updated: ${timestamp}</p>
+          </div>
+        `;
+      container.appendChild(div);
+    }
+  } catch (err) {
+    console.error("CoinGecko fetch error:", err.message);
+  }
+}
+
+// Run every 5 seconds like a streaming simulation
+setInterval(simulateCoinGeckoStream, 5000);
+simulateCoinGeckoStream(); // Initial call
+
+// Set dynamic copyright year
 const currentYear = new Date().getFullYear();
-year.textContent = currentYear;
+document.getElementById("year").textContent = currentYear;

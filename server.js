@@ -156,24 +156,40 @@ app.route("/dashboard").get(async (req, res) => {
 
     if (!info) return res.render("information");
 
-    const symbols = [
-      "BTCUSDT",
-      "ETHUSDT",
-      "BNBUSDT",
-      "SOLUSDT",
-      "XRPUSDT",
-      "ADAUSDT",
-      "DOGEUSDT",
-      "AVAXUSDT",
-      "LINKUSDT",
+    // ✅ Define CoinGecko-friendly coin IDs
+    const coinIds = [
+      "bitcoin",
+      "ethereum",
+      "binancecoin",
+      "solana",
+      "ripple",
+      "cardano",
+      "dogecoin",
+      "avalanche-2",
+      "chainlink",
     ];
-    const encoded = encodeURIComponent(JSON.stringify(symbols));
-    const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${encoded}`;
 
-    const response = await axios.get(url, { timeout: 20000 }); // 20 seconds
-    const marketData = Array.isArray(response.data)
-      ? response.data
-      : Object.values(response.data);
+    // 📊 CoinGecko Simple Price API
+    const url = "https://api.coingecko.com/api/v3/simple/price";
+    const response = await axios.get(url, {
+      params: {
+        ids: coinIds.join(","),
+        vs_currencies: "usd",
+        include_24hr_change: "true",
+        include_last_updated_at: "true",
+      },
+      timeout: 20000,
+    });
+
+    // 🔍 Format data for dashboard
+    const marketData = Object.entries(response.data).map(([id, info]) => ({
+      name: id.replace(/-/g, " ").toUpperCase(),
+      price: info.usd,
+      change: info.usd_24h_change?.toFixed(2) ?? null,
+      last_updated: info.last_updated_at
+        ? new Date(info.last_updated_at * 1000).toLocaleString()
+        : "N/A",
+    }));
 
     res.render("dashboard", {
       firstname: info.firstname,
@@ -185,8 +201,6 @@ app.route("/dashboard").get(async (req, res) => {
     });
   } catch (err) {
     console.error("Error loading dashboard:", err.message);
-
-    // 🧠 Fallback response logic
     if (res.headersSent) return;
     res.status(500).send("Server error: " + err.message);
   }

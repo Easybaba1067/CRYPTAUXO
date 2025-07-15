@@ -60,6 +60,32 @@ header::before {
   display: flex;
 }
 
+/* live  */
+.scroll-wrapper {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  background: #000;
+  color: #fff;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.scroll-content {
+  display: inline-block;
+  animation: scroll-left 30s linear infinite;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
 .inner-nav li {
   margin: 0 2rem;
   color: #ffff;

@@ -12,32 +12,25 @@ $(".bi-x-lg").click(() => {
   $(".nav ul").hide("slow");
 });
 
-//btc increament
 setInterval(() => {
-  // Get BTC amount from #account-balance (e.g., "0.01500000 BTC")
   const rawBTC = document.getElementById("account-balance").textContent.trim();
-  const btcAmount = parseFloat(rawBTC.replace(/[^\d.]/g, "")); // Remove "BTC"
+  const btcAmount = parseFloat(rawBTC.replace(/[^\d.]/g, ""));
 
-  // Fetch BTC price from Binance
-  fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT")
+  // ✅ Pull BTC price from CoinGecko
+  fetch(
+    "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+  )
     .then((response) => response.json())
     .then((data) => {
-      const btcPrice = parseFloat(data.price); // e.g. 62300.45
+      const btcPrice = data.bitcoin.usd;
       const usdAmount = btcAmount * btcPrice;
 
       document.getElementById("balance").textContent = `$${usdAmount.toFixed(
         2
       )}`;
     })
-    .catch((error) => console.error("Fetch error:", error));
+    .catch((error) => console.error("CoinGecko fetch error:", error));
 }, 10000); // Updates every 10 seconds
-const transactionColor = document.querySelectorAll(".transaction-color");
-const heads = document.querySelectorAll(".head");
-const forms = document.querySelectorAll(".form-active");
-const withdraw = document.querySelectorAll(".head-withdraw");
-const withdrawActive = document.querySelectorAll(".withdraw-active");
-const data = document.querySelector(".live-data");
-
 // Account transaction color type
 
 transactionColor.forEach((transaction) => {
@@ -77,25 +70,25 @@ function dataScroll() {
 dataScroll();
 
 // Create WebSocket connection.
-var socket = new WebSocket(
-  "wss://stream.binance.com:9443/stream?streams=btcusdt@trade/ethusdt@trade/bnbusdt@trade/solusdt@trade"
-);
-// Listen for messages
-socket.addEventListener("message", (event) => {
-  raw = JSON.parse(event.data);
-  output = raw.data;
+setInterval(async () => {
+  try {
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,solana&vs_currencies=usd"
+    );
+    const data = await res.json();
 
-  // // parent div
-  const div = document.createElement("div");
-  div.className = "data";
-  div.innerHTML = `<h4 style="color:  rgb(52, 241, 52)">${output.s}</h4>`;
-
-  // // nested div
-  const dataFlex = document.createElement("div");
-  dataFlex.className = "data-flex";
-  dataFlex.innerHTML = `<h2 style="color: red">${output.q}</h2><p>$${output.p}</p>`;
-
-  // append
-  div.appendChild(dataFlex);
-  data.appendChild(div);
-});
+    for (const [id, info] of Object.entries(data)) {
+      const div = document.createElement("div");
+      div.className = "data";
+      div.innerHTML = `
+        <h4 style="color: rgb(52,241,52)">${id.toUpperCase()}</h4>
+        <div class="data-flex">
+          <h2 style="color: red">$${info.usd}</h2>
+        </div>
+      `;
+      dataContainer.appendChild(div); // Assuming `dataContainer` is your wrapper
+    }
+  } catch (err) {
+    console.error("CoinGecko polling error:", err);
+  }
+}, 5000); // Poll every 5 seconds
