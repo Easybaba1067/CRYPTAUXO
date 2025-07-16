@@ -20,6 +20,14 @@ const year = document.querySelector(".year");
 function scroll(element) {
   document.querySelector(element).scrollIntoView({ behavior: "smooth" });
 }
+const liveDataContainer = document.querySelector(".live-data");
+// 🏃‍♂️ Smooth Scroll Animation
+let scrollSpeed = 50;
+function dataScroll() {
+  liveDataContainer.scrollLeft += scrollSpeed / 60;
+  requestAnimationFrame(dataScroll);
+}
+dataScroll();
 
 myLink.forEach((link) => {
   link.addEventListener("click", (e) => {
@@ -91,4 +99,4 @@ simulateCoinGeckoStream(); // Initial call
 
 // Set dynamic copyright year
 const currentYear = new Date().getFullYear();
-document.getElementById("year").textContent = currentYear;
+document.querySelector(".year").textContent = currentYear;

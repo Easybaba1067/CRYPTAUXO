@@ -92,10 +92,11 @@
           <h4>Account balance</h4>
           <p id="account-balance"><%= amount %> BTC</p>
         </div>
+
         <div class="account-value">
           <h4>Estimated value</h4>
           <p id="balance">
-            $<%= amount %>
+            $<%= estimatedValue %>
             <span class="deposit-btn"
               ><a href="/account-history">Deposit</a></span
             >
@@ -106,11 +107,26 @@
     <div class="picker">
       <label for="symbol">Choose Symbol:</label>
       <select id="symbol">
-        <option value="BTCUSDT">BTCUSDT</option>
-        <option value="ETHUSDT">ETHUSDT</option>
-        <option value="BNBUSDT">BNBUSDT</option>
-        <option value="SOLUSDT">SOLUSDT</option>
-        <option value="XRPUSDT">XRPUSDT</option>
+        <option value="BTC">BTCUSDT</option>
+        <option value="ETH">ETHUSDT</option>
+        <option value="BNB">BNBUSDT</option>
+        <option value="SOL">SOLUSDT</option>
+        <option value="XRP">XRPUSDT</option>
+        <option value="ADA">ADAUSDT</option>
+        <option value="DOGE">DOGEUSDT</option>
+        <option value="DOT">DOTUSDT</option>
+        <option value="AVAX">AVAXUSDT</option>
+        <option value="TRX">TRXUSDT</option>
+        <option value="MATIC">MATICUSDT</option>
+        <option value="LTC">LTCUSDT</option>
+        <option value="ATOM">ATOMUSDT</option>
+        <option value="ICP">ICPUSDT</option>
+        <option value="NEAR">NEARUSDT</option>
+        <option value="XLM">XLMUSDT</option>
+        <option value="FIL">FILUSDT</option>
+        <option value="HBAR">HBARUSDT</option>
+        <option value="AAVE">AAVEUSDT</option>
+        <option value="UNI">UNIUSDT</option>
       </select>
 
       <label for="interval">Choose Interval:</label>
@@ -309,6 +325,5 @@
     </div>
     <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
     <script src="/chart.js"></script>
-    <script src="/dashboard.js"></script>
   </body>
 </html>

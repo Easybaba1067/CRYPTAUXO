@@ -92,10 +92,11 @@
           <h4>Account balance</h4>
           <p id="account-balance"><%= amount %> BTC</p>
         </div>
+
         <div class="account-value">
           <h4>Estimated value</h4>
           <p id="balance">
-            $
+            $<%= estimatedValue %>
             <span class="deposit-btn"
               ><a href="/account-history">Deposit</a></span
             >
@@ -116,9 +117,17 @@
         <h2>Market Value</h2>
         <div class="markets">
           <div class="market-record">
-            <h4>Symbols</h4>
+            <h4>Name</h4>
             <% if (Array.isArray(markets)) { %> <% markets.forEach(m => { %>
             <li><%= m. name %></li>
+            <% }) %> <% } else { %>
+            <li>Market data is not available</li>
+            <% } %>
+          </div>
+          <div class="market-record">
+            <h4>Symbols</h4>
+            <% if (Array.isArray(markets)) { %> <% markets.forEach(m => { %>
+            <li><%= m.symbol %></li>
             <% }) %> <% } else { %>
             <li>Market data is not available</li>
             <% } %>

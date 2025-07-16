@@ -8,6 +8,8 @@ const axios = require("axios");
 const crypto = require("crypto");
 const punycode = require("punycode/");
 const MongoStore = require("connect-mongo");
+const fetch = require("node-fetch");
+
 const app = express();
 
 app.set("view engine", "ejs");
@@ -146,8 +148,7 @@ app
   );
 
 //  dashboard
-
-app.route("/dashboard").get(async (req, res) => {
+app.get("/dashboard", async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect("/login");
 
   try {
@@ -155,41 +156,55 @@ app.route("/dashboard").get(async (req, res) => {
     const info = user.information;
     if (!info) return res.render("information");
 
-    // 🧠 CoinGecko markets endpoint (up to 250 coins per page)
-    const url = "https://api.coingecko.com/api/v3/coins/markets";
-    const response = await axios.get(url, {
-      params: {
-        vs_currency: "usd",
-        order: "market_cap_desc",
-        per_page: 100, // You can increase this to 250 max
-        page: 1,
-        price_change_percentage: "24h",
-      },
-      timeout: 15000,
-    });
+    const btcAmount = parseFloat(parseFloat(user.amount || 0).toFixed(8));
+    let estimatedValue = "N/A";
 
-    // 🧪 Format data for dashboard
-    const marketData = response.data.map((coin) => ({
-      name: coin.name,
-      symbol: coin.symbol.toUpperCase(),
-      price: coin.current_price,
-      change: coin.price_change_percentage_24h?.toFixed(2) ?? "N/A",
-      last_updated: new Date(coin.last_updated).toLocaleTimeString("en-US", {
-        hour12: false,
-      }),
-      image: coin.image,
-    }));
+    try {
+      const rateRes = await axios.get(
+        "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
+      );
+      const btcRateUSD = rateRes.data.USD;
+      if (btcRateUSD) {
+        estimatedValue = parseFloat((btcAmount * btcRateUSD).toFixed(2));
+      }
+    } catch (err) {
+      console.warn("⚠️ Could not fetch BTC rate:", err.message);
+    }
+
+    const apiKey = "YOUR_CRYPTOCOMPARE_API_KEY"; // Replace with actual key
+    const url = `https://min-api.cryptocompare.com/data/top/mktcapfull?limit=100&tsym=USD&api_key=${apiKey}`;
+    const response = await axios.get(url, { timeout: 15000 });
+
+    const marketData = response.data.Data.map((coin) => {
+      const display = coin.DISPLAY?.USD;
+      return {
+        name: coin.CoinInfo?.FullName || "Unknown",
+        symbol: coin.CoinInfo?.Name?.toUpperCase() || "N/A",
+        price: display?.PRICE || "N/A",
+        change: display?.CHANGEPCT24HOUR || "N/A",
+        last_updated: coin.LASTUPDATE
+          ? new Date(coin.LASTUPDATE * 1000).toLocaleTimeString("en-US", {
+              hour12: false,
+            })
+          : "N/A",
+        image: coin.CoinInfo?.ImageUrl
+          ? `https://www.cryptocompare.com${coin.CoinInfo.ImageUrl}`
+          : "/images/default-coin.png",
+      };
+    }).filter((coin) => coin.price !== "N/A");
 
     res.render("dashboard", {
       firstname: info.firstname,
       lastname: info.lastname,
-      amount: user.amount,
+      amount: btcAmount.toFixed(8),
+      estimatedValue,
       ID: user.ID,
       email: user.username,
       markets: marketData,
+      information: info,
     });
   } catch (err) {
-    console.error("CoinGecko error on dashboard:", err.message);
+    console.error("CryptoCompare error on dashboard:", err.message);
     if (res.headersSent) return;
     res.status(500).send("Server error: " + err.message);
   }
@@ -298,17 +313,32 @@ app.get("/account-history", async (req, res) => {
     const info = user.information;
     const transactions = user.transactions || [];
 
-    if (transactions.length === 0) {
-      return res.redirect("/no-transaction");
+    if (transactions.length === 0) return res.redirect("/no-transaction");
+
+    const btcAmount = parseFloat(parseFloat(user.amount || 0).toFixed(8));
+    let estimatedValue = "N/A";
+
+    try {
+      const rateRes = await axios.get(
+        "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
+      );
+      const btcRateUSD = rateRes.data.USD;
+      if (btcRateUSD) {
+        estimatedValue = parseFloat((btcAmount * btcRateUSD).toFixed(2));
+      }
+    } catch (err) {
+      console.warn("⚠️ Could not fetch BTC rate:", err.message);
     }
 
     res.render("account-history", {
       firstname: info.firstname,
       lastname: info.lastname,
-      amount: user.amount,
+      amount: btcAmount.toFixed(8),
+      estimatedValue,
       ID: user.ID,
       email: user.username,
-      transactions,
+      transaction: transactions,
+      information: info,
     });
   } catch (err) {
     console.error("Error loading account-history:", err);
@@ -317,7 +347,6 @@ app.get("/account-history", async (req, res) => {
       .render("error", { error: "Failed to load account history." });
   }
 });
-
 // no-transaction for account history
 app.get("/no-transaction", async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect("/login");
@@ -327,14 +356,36 @@ app.get("/no-transaction", async (req, res) => {
     if (!user) return res.status(404).send("User not found");
 
     const info = user.information;
+    const transactions = user.transactions || [];
+
+    // 🧮 If no transactions, treat balance as zero
+    const btcAmount =
+      transactions.length === 0
+        ? 0
+        : parseFloat(parseFloat(user.amount || 0).toFixed(8));
+    let estimatedValue = "0.00";
+
+    try {
+      const rateRes = await axios.get(
+        "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
+      );
+      const btcRateUSD = rateRes.data.USD;
+      if (btcRateUSD && btcAmount > 0) {
+        estimatedValue = parseFloat((btcAmount * btcRateUSD).toFixed(2));
+      }
+    } catch (err) {
+      console.warn("⚠️ Could not fetch BTC rate:", err.message);
+    }
 
     res.render("no-transaction", {
       message: "No transactions found.",
       firstname: info.firstname,
       lastname: info.lastname,
-      amount: user.amount,
+      amount: btcAmount.toFixed(8),
+      estimatedValue,
       ID: user.ID,
       email: user.username,
+      information: info,
     });
   } catch (err) {
     console.error("Error rendering no-transaction:", err);
@@ -344,25 +395,37 @@ app.get("/no-transaction", async (req, res) => {
   }
 });
 // exchange route
-app.route("/exchange").get(async (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.redirect("/login");
-  }
+app.get("/exchange", async (req, res) => {
+  if (!req.isAuthenticated()) return res.redirect("/login");
 
   try {
     const user = await User.findById(req.user._id);
     const info = user.information;
+    if (!info) return res.render("information");
 
-    if (!info) {
-      return res.render("information");
+    const btcAmount = parseFloat(parseFloat(user.amount || 0).toFixed(8));
+    let estimatedValue = "N/A";
+
+    try {
+      const rateRes = await axios.get(
+        "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
+      );
+      const btcRateUSD = rateRes.data.USD;
+      if (btcRateUSD) {
+        estimatedValue = parseFloat((btcAmount * btcRateUSD).toFixed(2));
+      }
+    } catch (err) {
+      console.warn("⚠️ Could not fetch BTC rate:", err.message);
     }
 
     res.render("exchange", {
       firstname: info.firstname,
       lastname: info.lastname,
-      amount: user.amount,
+      amount: btcAmount.toFixed(8),
+      estimatedValue,
       ID: user.ID,
       email: user.username,
+      information: info,
     });
   } catch (err) {
     console.error("Error:", err);
