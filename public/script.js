@@ -83,7 +83,7 @@ async function simulateCoinGeckoStream() {
           <h4 style="color: rgb(52, 241, 52); margin-bottom: 0;">${id.toUpperCase()}</h4>
           <div class="data-flex">
             <h2 style="color: red; margin: 0;">$${info.usd}</h2>
-            <p style="margin: 0; font-size: 12px;">Updated: ${timestamp}</p>
+            <p style="margin: 0; font-size: 12px;">${timestamp}</p>
           </div>
         `;
       container.appendChild(div);
