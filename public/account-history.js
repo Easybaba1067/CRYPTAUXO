@@ -1,26 +1,23 @@
+let btcAmountGlobal = 0;
+
 const amountSelect = document.getElementById("amountSelect");
 const amountSummary = document.getElementById("amountSummary");
 const wallet = document.getElementById("wallet");
 const qrcodeDiv = document.getElementById("qrcode");
-const statusMessage = document.getElementById("statusMessage");
 const confirmBtn = document.getElementById("confirmBtn");
+const statusMessage = document.getElementById("statusMessage");
 
-let btcAmountGlobal = 0; // store BTC amount for later use
-// 🪙 Fetch live BTC price from Binance
-async function fetchBTCPriceUSD() {
-  try {
-    const res = await fetch(
-      "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
-    );
-    const data = await res.json();
-    return parseFloat(data.price); // Binance returns a string—parse it to float
-  } catch (err) {
-    console.error("⚠️ Binance fetch error:", err);
-    return null;
-  }
+// 📦 Update summary and QR code when user selects an amount
+function updateAmountSummary() {
+  const selectedUSD = parseFloat(amountSelect.value);
+  const btcRate = 120132; // You can inject live rate from server here
+  btcAmountGlobal = parseFloat((selectedUSD / btcRate).toFixed(8));
+
+  amountSummary.innerHTML = `Send <strong>$${selectedUSD}</strong> via <strong>Bitcoin Network</strong> to the wallet below`;
+  generateQRCode(btcAmountGlobal);
 }
 
-// 📲 Generate Bitcoin Payment QR Code
+// 📲 Generate QR code with BTC payment URI
 function generateQRCode(btcAmount) {
   const address = wallet.textContent.trim();
   const paymentURI = `bitcoin:${address}?amount=${btcAmount}`;
@@ -32,30 +29,10 @@ function generateQRCode(btcAmount) {
   });
 }
 
-// 🔄 Update display and store amount
-async function updateAmountSummary() {
-  const usdAmount = parseFloat(amountSelect.value);
-  const btcRate = await fetchBTCPriceUSD();
-
-  if (!btcRate) {
-    amountSummary.innerHTML = `⚠️ Failed to load BTC rate.`;
-    return;
-  }
-
-  const btcAmount = (usdAmount / btcRate).toFixed(8);
-  btcAmountGlobal = btcAmount; // store for verification
-
-  amountSummary.innerHTML = `
-    Send <strong>${btcAmount} BTC</strong> (~$${usdAmount} USD)
-    via <strong>Bitcoin Network</strong> to the wallet below:
-  `;
-
-  generateQRCode(btcAmount);
-}
-
-// 🧠 Handle Payment Verification (with POST body)
+// 🧠 Handle Payment Verification with backend POST
 confirmBtn.addEventListener("click", async () => {
   const walletAddress = wallet.textContent.trim();
+  const usdAmount = parseFloat(amountSelect.value);
 
   statusMessage.textContent = "🔄 Verifying payment...";
   confirmBtn.disabled = true;
@@ -71,6 +48,7 @@ confirmBtn.addEventListener("click", async () => {
         amount: btcAmountGlobal,
         currency: "BTC",
         network: "binance",
+        usd: usdAmount,
       }),
     });
 
@@ -87,6 +65,6 @@ confirmBtn.addEventListener("click", async () => {
   }
 });
 
-// 🚀 Start on load
+// 🧭 Initialize on page load
 updateAmountSummary();
 amountSelect.addEventListener("change", updateAmountSummary);

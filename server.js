@@ -216,6 +216,14 @@ app.post("/verify-payment", async (req, res) => {
   }
 
   try {
+    const { wallet, amount, currency, network, usd } = req.body;
+    if (!wallet || !amount || !currency || !network || !usd) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required payment details.",
+      });
+    }
+
     const userId = req.user._id;
     const timestamp = Date.now();
     const query = `timestamp=${timestamp}`;
@@ -230,25 +238,29 @@ app.post("/verify-payment", async (req, res) => {
     // 🚀 Fetch deposit history from Binance
     const binanceRes = await axios.get(binanceUrl, {
       headers: { "X-MBX-APIKEY": process.env.API_KEY },
-      timeout: 10000,
+      timeout: 60000,
     });
 
     const deposits = binanceRes.data;
+
+    // 🧠 Find matching confirmed BTC deposit
     const confirmed = deposits.find(
-      (dep) => dep.status === 1 && dep.asset === "BTC"
+      (dep) =>
+        dep.status === 1 &&
+        dep.asset === currency &&
+        dep.address === wallet &&
+        parseFloat(dep.amount).toFixed(8) === parseFloat(amount).toFixed(8)
     );
 
     if (!confirmed) {
       return res.json({
         success: false,
-        message: "No confirmed BTC deposit found.",
+        message: "No matching confirmed deposit found.",
       });
     }
 
-    const btcAmount = parseFloat(parseFloat(confirmed.amount).toFixed(8));
-
-    // 🧠 Fetch USD rate with fallback
-    let btcRateUSD = 30000; // Safe fallback
+    // 💰 Convert BTC to USD
+    let btcRateUSD = 30000; // fallback
     try {
       const rateRes = await axios.get(
         "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
@@ -259,9 +271,9 @@ app.post("/verify-payment", async (req, res) => {
       console.warn("⚠️ CoinGecko unavailable, using fallback rate.");
     }
 
-    const depositUSD = btcAmount * btcRateUSD;
+    const btcAmount = parseFloat(parseFloat(confirmed.amount).toFixed(8));
+    const depositUSD = parseFloat((btcAmount * btcRateUSD).toFixed(2));
 
-    // 📦 Update user model
     const user = await User.findById(userId);
     const existingTx = user.transactions.find(
       (tx) => tx.orderId === confirmed.txId
@@ -271,18 +283,18 @@ app.post("/verify-payment", async (req, res) => {
       existingTx.status = "confirmed";
       existingTx.txId = confirmed.txId;
       existingTx.confirmedAt = new Date();
-      user.amount = parseFloat((user.amount + depositUSD).toFixed(2));
     } else {
       user.transactions.push({
         orderId: confirmed.txId,
         amount: btcAmount,
         usdAmount: depositUSD,
+        address: wallet,
         status: "confirmed",
         confirmedAt: new Date(),
       });
-      user.amount = parseFloat((user.amount + depositUSD).toFixed(2));
     }
 
+    user.amount = parseFloat((user.amount + depositUSD).toFixed(2));
     await user.save();
 
     res.json({
@@ -290,14 +302,14 @@ app.post("/verify-payment", async (req, res) => {
       tx: confirmed.txId,
       btc: btcAmount.toFixed(8),
       usd: depositUSD.toFixed(2),
-      message: "Deposit confirmed and saved.",
+      message: "✅ Deposit verified and saved.",
     });
   } catch (err) {
-    console.error("❌ Error verifying payment:", err.message);
+    console.error("❌ Verification error:", err.message);
     if (res.headersSent) return;
     res.status(500).json({
       success: false,
-      message: "Server error verifying payment.",
+      message: "Internal server error during verification.",
     });
   }
 });
